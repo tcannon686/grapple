@@ -62,48 +62,29 @@ class GameState {
   constructor () {
     this.scene = new THREE.Scene()
 
-    // set up the camera
-    this.camera = new THREE.PerspectiveCamera(90, canvas.width / canvas.height, 0.1, 1000)
-    this.pitch = 0
-    this.yaw = -1*Math.PI
-    this.camera.position.z = 2
-
     // set up the map
     this.map = new GameMap(20,20)
     this.scene.add(this.map.getMesh())
+
+    this.things = []
+    /* Add the player. */
+    this.add(new Player())
   }
 
-  update () {
-    this.camera.aspect = canvas.width / canvas.height
-    this.camera.updateProjectionMatrix()
+  update (dt) {
+    for (let i = 0; i < this.things.length; i++) {
+      if (this.things[i].update && !this.things[i].update(dt)) {
+        this.things[i].splice(i--, 1)
+      }
+    }
   }
 
   render () {
     renderer.render(this.scene, this.camera)
   }
 
-  mousemove (dx,dy) {
-    this.yaw += dx/-500
-    this.pitch += dy/300
-    this.pitch = Math.min(this.pitch, Math.PI/2)
-    this.pitch = Math.max(this.pitch, Math.PI/-2)
-
-    let sign = Math.cos(this.pitch)
-    if (sign > 0) {
-        sign = 1
-    }
-    else if (sign < 0) {
-        sign = -1
-    }
-    else {
-        sign = 0
-    }
-
-    const cosPitch = sign*Math.max(Math.abs(Math.cos(this.pitch)), 0.001)
-    this.camera.lookAt(
-      this.camera.position.x+Math.sin(this.yaw)*cosPitch,
-      this.camera.position.y-Math.sin(this.pitch),
-      this.camera.position.z+Math.cos(this.yaw)*cosPitch
-    )
+  add (thing) {
+    this.things.push(thing)
+    thing.onEnterScene(this)
   }
 }

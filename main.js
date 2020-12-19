@@ -1,9 +1,11 @@
 'use strict';
 
 const canvas = document.getElementById("theCanvas")
-const renderer = new THREE.WebGLRenderer({canvas, antialias: true})
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true })
+
 const gameStateStack = new GameStateStack()
 const print = console.log
+
 let lastTime
 let hasLockedPointer = false
 
@@ -43,14 +45,6 @@ function Loop () {
 
   requestAnimationFrame(Loop)
 }
-
-// send mousemove event to the top gamestate
-document.addEventListener("mousemove", (event) => {
-  const state = gameStateStack.peek()
-  if (state) {
-    state.mousemove(event.movementX, event.movementY)
-  }
-}, false)
 
 // locks the pointer when you click
 canvas.onclick = () => {
