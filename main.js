@@ -1,6 +1,7 @@
 const canvas = document.getElementById("theCanvas")
 const renderer = new THREE.WebGLRenderer({canvas})
 const gameStateStack = new GameStateStack()
+const print = console.log
 let lastTime
 
 function Start () {
@@ -40,12 +41,18 @@ function Loop () {
   requestAnimationFrame(Loop)
 }
 
-document.addEventListener("mousemove", () => {
+// send mousemove event to the top gamestate
+document.addEventListener("mousemove", (event) => {
   const state = gameStateStack.peek()
   if (state) {
-    state.mousemove()
+    state.mousemove(event.movementX, event.movementY)
   }
 }, false);
+
+// locks the pointer when you click
+canvas.onclick = () => {
+  canvas.requestPointerLock()
+}
 
 Start()
 Loop()

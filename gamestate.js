@@ -29,7 +29,9 @@ class GameState {
   constructor () {
     this.scene = new THREE.Scene()
     this.camera = new THREE.PerspectiveCamera(90, canvas.width / canvas.height, 0.1, 1000)
-    //this.controls = new OrbitControls(this.camera, renderer.domElement)
+    this.pitch = 0
+    this.yaw = 0
+    this.cameraPosition = [0,0,0]
 
     // define the map
     const map = []
@@ -61,14 +63,34 @@ class GameState {
   update () {
     this.camera.aspect = canvas.width / canvas.height
     this.camera.updateProjectionMatrix()
-    //this.controls.update()
-    //this.camera.rotation.y += 0.05
   }
 
   render () {
     renderer.render(this.scene, this.camera)
   }
 
-  mouseMove () {
+  mousemove (dx,dy) {
+    this.yaw += dx/-500
+    this.pitch += dy/300
+    this.pitch = Math.min(this.pitch, Math.PI/2)
+    this.pitch = Math.max(this.pitch, Math.PI/-2)
+
+    let sign = Math.cos(this.pitch)
+    if (sign > 0) {
+        sign = 1
+    }
+    else if (sign < 0) {
+        sign = -1
+    }
+    else {
+        sign = 0
+    }
+
+    const cosPitch = sign*Math.max(Math.abs(Math.cos(this.pitch)), 0.001)
+    this.camera.lookAt(
+      this.camera.position.x+Math.sin(this.yaw)*cosPitch,
+      this.camera.position.y-Math.sin(this.pitch),
+      this.camera.position.z+Math.cos(this.yaw)*cosPitch
+    )
   }
 }
