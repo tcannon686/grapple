@@ -3,6 +3,7 @@ const renderer = new THREE.WebGLRenderer({canvas})
 const gameStateStack = new GameStateStack()
 const print = console.log
 let lastTime
+let hasLockedPointer = false
 
 function Start () {
   gameStateStack.push(new GameState())
@@ -52,6 +53,7 @@ document.addEventListener("mousemove", (event) => {
 // locks the pointer when you click
 canvas.onclick = () => {
   canvas.requestPointerLock()
+  hasLockedPointer = true
 }
 
 Start()

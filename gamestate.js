@@ -30,16 +30,17 @@ class GameState {
     this.scene = new THREE.Scene()
     this.camera = new THREE.PerspectiveCamera(90, canvas.width / canvas.height, 0.1, 1000)
     this.pitch = 0
-    this.yaw = 0
-    this.cameraPosition = [0,0,0]
+    this.yaw = -1*Math.PI
 
     // define the map
     const map = []
-    const MapSize = 2
-    const MapHeight = 2
+    const MapSize = 20
+    const MapHeight = 20
 
     // const material = new THREE.MeshBasicMaterial({ color: 0x050505 })
     const material = new THREE.MeshNormalMaterial()
+    let totalGeometry = new THREE.Geometry()
+
     for (let x = 0; x < MapSize; x++) {
       map[x] = []
       for (let y = 0; y < MapHeight; y++) {
@@ -47,15 +48,14 @@ class GameState {
         for (let z = 0; z < MapSize; z++) {
           map[x][y][z] = Math.floor(Math.random() + 0.5)
 
-          // only add a block if there's a block here
+          // only add a block if there's supposed to be a block here
           if (map[x][y][z] === 1) {
-            const geometry = new THREE.BoxGeometry(1, 1, 1)
-            geometry.translate(x, y, z)
-            this.scene.add(new THREE.Mesh(geometry, material))
+            totalGeometry.merge(new THREE.BoxGeometry(1,1,1).translate(x,y,z))
           }
         }
       }
     }
+    this.scene.add(new THREE.Mesh(totalGeometry, material))
 
     this.camera.position.z = 2
   }
