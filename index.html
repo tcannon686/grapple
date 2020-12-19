@@ -1,9 +1,8 @@
 <html>
   <head>
     <title> Grapple </title>
-    <script type="module" src="main.js"></script>
     <style>
-      #canvas
+      #theCanvas
       {
         position: fixed;
         top: 0;
@@ -14,10 +13,13 @@
     </style>
   </head>
   <body>
-    <canvas id="canvas">
+    <canvas id="theCanvas">
       Your browser doesn't support the canvas tag. Please use a good browser
       like Firefox.
     </canvas>
   </body>
-</html>
 
+  <script src="three.min.js"></script>
+  <script src="gamestate.js"></script>
+  <script src="main.js"></script>
+</html>

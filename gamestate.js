@@ -1,8 +1,4 @@
-import * as THREE from 'https://cdnjs.cloudflare.com/ajax/libs/three.js/r123/three.module.min.js'
-import { OrbitControls } from 'https://threejsfundamentals.org/threejs/resources/threejs/r122/examples/jsm/controls/OrbitControls.js'
-import { canvas, renderer } from './main.js'
-
-export class GameStateStack {
+class GameStateStack {
   constructor () {
     this.gameStateStack = []
   }
@@ -29,11 +25,11 @@ export class GameStateStack {
   }
 }
 
-export class GameState {
+class GameState {
   constructor () {
     this.scene = new THREE.Scene()
     this.camera = new THREE.PerspectiveCamera(90, canvas.width / canvas.height, 0.1, 1000)
-    this.controls = new OrbitControls(this.camera, renderer.domElement)
+    //this.controls = new OrbitControls(this.camera, renderer.domElement)
 
     // define the map
     const map = []
@@ -62,13 +58,17 @@ export class GameState {
     this.camera.position.z = 2
   }
 
+  update () {
+    this.camera.aspect = canvas.width / canvas.height
+    this.camera.updateProjectionMatrix()
+    //this.controls.update()
+    //this.camera.rotation.y += 0.05
+  }
+
   render () {
     renderer.render(this.scene, this.camera)
   }
 
-  update () {
-    this.camera.aspect = canvas.width / canvas.height
-    this.camera.updateProjectionMatrix()
-    this.controls.update()
+  mouseMove () {
   }
 }

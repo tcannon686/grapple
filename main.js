@@ -1,47 +1,51 @@
-import * as THREE from 'https://cdnjs.cloudflare.com/ajax/libs/three.js/r123/three.module.min.js'
-import { GameState, GameStateStack } from './gamestate.js'
+const canvas = document.getElementById("theCanvas")
+const renderer = new THREE.WebGLRenderer({canvas})
+const gameStateStack = new GameStateStack()
+let lastTime
 
-export const canvas = document.querySelector('#canvas')
-export const renderer = new THREE.WebGLRenderer({ canvas })
-
-function main () {
-  const gameStateStack = new GameStateStack()
+function Start () {
   gameStateStack.push(new GameState())
-
-  function render () {
-    const state = gameStateStack.peek()
-    if (state) {
-      state.render()
-    }
-  }
-
-  function update (dt) {
-    const state = gameStateStack.peek()
-    if (state) {
-      state.update(dt)
-    }
-  }
-
-  let lastTime = performance.now() / 1000.0
-  function loop () {
-    /* Calculate delta. */
-    const dt = performance.now() / 1000.0 - lastTime
-    lastTime += dt
-
-    /* Update the canvas and camera. */
-    canvas.width = window.innerWidth
-    canvas.height = window.innerHeight
-
-    renderer.setSize(canvas.width, canvas.height)
-
-    /* Update then render. */
-    update(dt)
-    render()
-
-    requestAnimationFrame(loop)
-  }
-
-  loop()
+  lastTime = performance.now() / 1000.0
 }
 
-main()
+function Update (dt) {
+  const state = gameStateStack.peek()
+  if (state) {
+    state.update(dt)
+  }
+}
+
+function Render () {
+  const state = gameStateStack.peek()
+  if (state) {
+    state.render()
+  }
+}
+
+function Loop () {
+  /* Calculate delta. */
+  const dt = performance.now() / 1000.0 - lastTime
+  lastTime += dt
+
+  /* Update the canvas and camera. */
+  canvas.width = window.innerWidth
+  canvas.height = window.innerHeight
+
+  renderer.setSize(canvas.width, canvas.height)
+
+  /* Update then render. */
+  Update(dt)
+  Render()
+
+  requestAnimationFrame(Loop)
+}
+
+document.addEventListener("mousemove", () => {
+  const state = gameStateStack.peek()
+  if (state) {
+    state.mousemove()
+  }
+}, false);
+
+Start()
+Loop()
