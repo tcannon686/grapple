@@ -28,33 +28,64 @@ class GameStateStack {
 }
 
 class GameMap {
-  constructor (width, height) {
-    this.map = []
-    this.geometry = new THREE.Geometry()
+  constructor (name) {
+    this.name = name
+
+    // check if a map with this name already exists
+    // load it if there is, otherwise create a new map
+    let get = GetItem(this.name)
+    if (get) {
+      this.map = get
+      print(this.map)
+    } else if (confirm("Create a new map named \"" + this.name + "\"?")) {
+      let width = parseInt(prompt("Width of \"" + this.name + "\"", "20"))
+      let height = parseInt(prompt("Height of \"" + this.name + "\"", "20"))
+
+      this.map = {}
+      this.createRandom(width,height)
+      StoreItem(this.name, this.map)
+    }
+  }
+
+  // fill the map with random blocks
+  createRandom (width, height) {
+    this.map.arrayData = []
+    this.map.width = width
+    this.map.height = height
 
     for (let x = 0; x < width; x++) {
-      this.map[x] = []
+      this.map.arrayData[x] = []
       for (let y = 0; y < height; y++) {
-        this.map[x][y] = []
+        this.map.arrayData[x][y] = []
         for (let z = 0; z < width; z++) {
-          this.map[x][y][z] = Math.floor(Math.random() + 0.5)
-
-          // only add a block if there's supposed to be a block here
-          if (this.map[x][y][z] === 1) {
-            this.geometry.merge(new THREE.BoxGeometry(1,1,1).translate(x,y,z))
-          }
+          this.map.arrayData[x][y][z] = Math.floor(Math.random() + 0.5)
         }
       }
     }
   }
 
   getMesh () {
-    let material = new THREE.MeshNormalMaterial()
+    this.geometry = new THREE.Geometry()
+
+    let width = this.map.width
+    let height = this.map.height
+    for (let x = 0; x < width; x++) {
+      for (let y = 0; y < height; y++) {
+        for (let z = 0; z < width; z++) {
+          if (this.map.arrayData[x][y][z] === 1) {
+            this.geometry.merge(new THREE.BoxGeometry(1,1,1).translate(x,y,z))
+          }
+        }
+      }
+    }
+
+    const textureLoader = new THREE.TextureLoader()
+    let material = new THREE.MeshBasicMaterial({map: textureLoader.load("textures/wall1.png")})
     return new THREE.Mesh(this.geometry, material)
   }
 
   getBlock (x,y,z) {
-    return this.map[x][y][z]
+    return this.map.arrayData[x][y][z]
   }
 }
 
@@ -63,7 +94,7 @@ class GameState {
     this.scene = new THREE.Scene()
 
     // set up the map
-    this.map = new GameMap(20,20)
+    this.map = new GameMap("testmap3")
     this.scene.add(this.map.getMesh())
 
     this.things = []
