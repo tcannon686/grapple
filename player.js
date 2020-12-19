@@ -64,12 +64,10 @@ class Player extends Thing {
     )
   }
 
-  update (dt) {
+  update (dt, gameState) {
     // Pass for now.
     this.camera.aspect = canvas.width / canvas.height
     this.camera.updateProjectionMatrix()
-
-    this.camera.position.copy(this.position)
 
     /* Do controls. */
     {
@@ -112,6 +110,8 @@ class Player extends Thing {
         this.position.add(forward)
       }
     }
+
+    this.camera.position.copy(this.position)
 
     return true
   }
