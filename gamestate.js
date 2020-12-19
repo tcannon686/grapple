@@ -33,7 +33,7 @@ class GameMap {
 
     // check if a map with this name already exists
     // load it if there is, otherwise create a new map
-    let get = GetItem(this.name)
+    let get = Levels[this.name]
     if (get) {
       this.map = get
       print(this.map)
@@ -43,8 +43,31 @@ class GameMap {
 
       this.map = {}
       this.createRandom(width,height)
-      StoreItem(this.name, this.map)
     }
+
+    if (DebugModes.editingLevel) {
+      document.addEventListener("keydown", (event) => {
+        // press enter to save the current level
+        if (event.keyCode == 13) {
+          this.saveLevel("level.json", this.map)
+        }
+      })
+    }
+  }
+
+  saveLevel (filename, data) {
+    var element = document.createElement('a')
+    element.setAttribute(
+      'href',
+      `data:text/plain;charset=utf-8,${encodeURIComponent(JSON.stringify(data))}`)
+    element.setAttribute('download', filename)
+
+    element.style.display = 'none'
+    document.body.appendChild(element)
+
+    element.click()
+
+    document.body.removeChild(element)
   }
 
   // fill the map with random blocks

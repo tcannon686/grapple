@@ -9,6 +9,11 @@ const print = console.log
 let lastTime
 let hasLockedPointer = false
 
+const DebugModes = {
+  editingLevel: true,
+  flying: true,
+}
+
 function Start () {
   gameStateStack.push(new GameState())
   lastTime = performance.now() / 1000.0
