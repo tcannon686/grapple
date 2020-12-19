@@ -32,15 +32,30 @@ class Player extends Thing {
     this.onKeyDown = (e) => this.isKeyDown[e.key.toUpperCase()] = true
     this.onKeyUp = (e) => this.isKeyDown[e.key.toUpperCase()] = false
     this.mouseDown = (e) => {
-      if (e.buttons == 1) {
-        let map = gameState.map
+      let map = gameState.map
 
-        // add 0.5 for rounding, so that it hits the block in the middle of the screen
-        let hitPosition = map.raycast(new THREE.Vector3(this.position.x + 0.5, this.position.y + 0.5, this.position.z + 0.5), this.look)
+      if (DebugModes.editingLevel) {
+        // destroy a block
+        if (e.buttons == 1) {
+          // add 0.5 for rounding, so that it hits the block in the middle of the screen
+          let hitPosition = map.raycast(new THREE.Vector3(this.position.x + 0.5, this.position.y + 0.5, this.position.z + 0.5), this.look)
 
-        if (map.get(hitPosition) !== undefined) {
-          map.set(hitPosition, 0)
-          map.updateMesh()
+          if (map.get(hitPosition) !== undefined) {
+            map.set(hitPosition, 0)
+            map.updateMesh()
+          }
+        }
+
+        // place a block
+        if (e.buttons == 2) {
+          // add 0.5 for rounding, so that it hits the block in the middle of the screen
+          let hitPosition = map.raycast(new THREE.Vector3(this.position.x + 0.5, this.position.y + 0.5, this.position.z + 0.5), this.look)
+          hitPosition = hitPosition.addScaledVector(this.look, -0.1)
+
+          if (map.get(hitPosition) !== undefined) {
+            map.set(hitPosition, 1)
+            map.updateMesh()
+          }
         }
       }
     }
