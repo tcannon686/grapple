@@ -17,7 +17,7 @@ class Player extends Thing {
     this.velocity = new THREE.Vector3(0, 0, 0)
 
     this.speed = 1.0
-    this.height = 0
+    this.height = 1.7
 
     this.isKeyDown = {}
   }
@@ -126,6 +126,11 @@ class Player extends Thing {
         dirZ -= 1.0
       }
 
+      /* TODO jump? */
+      if(this.isKeyDown[' ']) {
+        this.velocity.y = 1
+      }
+
       const len = Math.sqrt(dirX * dirX + dirZ * dirZ)
       if (len > 0) {
         dirX *= this.speed * dt / len
@@ -156,22 +161,33 @@ class Player extends Thing {
     this.position.addScaledVector(this.velocity, dt)
 
     /* Collision detection. */
-    if (this.position.y - this.height <= 0) {
-      this.position.y = this.height
+    if (this.position.y - this.height / 2 + 0.5 <= 0) {
+      this.position.y = this.height / 2 - 0.5
       this.velocity.y = 0
     }
 
-    const overlap = gameState.map.getOverlap(
-      this.position.x, this.position.y, this.position.z)
-    if(overlap) {
-      this.position.add(overlap)
-      /* Calculate normal. */
-      const normal = overlap.clone()
-      normal.normalize()
-      const velProjNormal = this.velocity.clone()
-      velProjNormal.projectOnVector(normal)
-      velProjNormal.multiplyScalar(-1.0)
-      this.velocity.add(velProjNormal)
+    const samples = 3 /* The number of points along each axis. */
+    const mid = Math.floor(samples / 2)
+
+    for(let i = 0; i < samples; i ++) {
+      for(let j = 0; j < samples; j ++) {
+        for(let k = 0; k < samples; k ++) {
+          const overlap = gameState.map.getOverlap(
+            this.position.x + (i - mid) * (1 / samples),
+            this.position.y - (j - mid) * (1 / samples) * this.height,
+            this.position.z + (k - mid) * (1 / samples))
+          if(overlap) {
+            this.position.add(overlap)
+            /* Calculate normal. */
+            const normal = overlap.clone()
+            normal.normalize()
+            const velProjNormal = this.velocity.clone()
+            velProjNormal.projectOnVector(normal)
+            velProjNormal.multiplyScalar(-1.0)
+            this.velocity.add(velProjNormal)
+          }
+        }
+      }
     }
 
     this.camera.position.copy(this.position)
