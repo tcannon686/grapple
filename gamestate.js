@@ -31,6 +31,10 @@ class GameMap {
   constructor (name) {
     this.name = name
 
+    const textureLoader = new THREE.TextureLoader()
+    let material = new THREE.MeshBasicMaterial({map: textureLoader.load("textures/wall1.png")})
+    this.mesh = new THREE.Mesh(new THREE.BoxGeometry(1,1,1), material)
+
     // check if a map with this name already exists
     // load it if there is, otherwise create a new map
     let get = Levels[this.name]
@@ -87,7 +91,7 @@ class GameMap {
     }
   }
 
-  getMesh () {
+  updateMesh () {
     this.geometry = new THREE.Geometry()
 
     let width = this.map.width
@@ -102,13 +106,40 @@ class GameMap {
       }
     }
 
-    const textureLoader = new THREE.TextureLoader()
-    let material = new THREE.MeshBasicMaterial({map: textureLoader.load("textures/wall1.png")})
-    return new THREE.Mesh(this.geometry, material)
+    this.mesh.geometry = this.geometry
   }
 
-  getBlock (x,y,z) {
-    return this.map.arrayData[x][y][z]
+  raycast (from, direction) {
+    let raypos = from.clone()
+
+    while (true) {
+      if (this.get(raypos) === undefined || this.get(raypos)) {
+        break
+      }
+
+      raypos = raypos.addScaledVector(direction, 0.1)
+    }
+
+    return raypos
+  }
+
+  get (vector) {
+    let vx = Math.floor(vector.x)
+    let vy = Math.floor(vector.y)
+    let vz = Math.floor(vector.z)
+    return this.map.arrayData[vx] && this.map.arrayData[vx][vy] && this.map.arrayData[vx][vy][vz]
+  }
+
+  set (vector, value) {
+    let vx = Math.floor(vector.x)
+    let vy = Math.floor(vector.y)
+    let vz = Math.floor(vector.z)
+    if (this.map.arrayData[vx] !== undefined
+      && this.map.arrayData[vx][vy] !== undefined
+      && this.map.arrayData[vx][vy][vz] !== undefined)
+    {
+      this.map.arrayData[vx][vy][vz] = value
+    }
   }
 }
 
@@ -118,7 +149,8 @@ class GameState {
 
     // set up the map
     this.map = new GameMap("testmap3")
-    this.scene.add(this.map.getMesh())
+    this.map.updateMesh()
+    this.scene.add(this.map.mesh)
 
     this.things = []
     /* Add the player. */

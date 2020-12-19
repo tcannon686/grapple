@@ -13,6 +13,7 @@ class Player extends Thing {
     this.yaw = 0
 
     this.position = new THREE.Vector3(0, 0, 2)
+    this.look = new THREE.Vector3(0,0,0)
 
     this.speed = 1.0
 
@@ -30,15 +31,30 @@ class Player extends Thing {
 
     this.onKeyDown = (e) => this.isKeyDown[e.key.toUpperCase()] = true
     this.onKeyUp = (e) => this.isKeyDown[e.key.toUpperCase()] = false
+    this.mouseDown = (e) => {
+      if (e.buttons == 1) {
+        let map = gameState.map
+
+        // add 0.5 for rounding, so that it hits the block in the middle of the screen
+        let hitPosition = map.raycast(new THREE.Vector3(this.position.x + 0.5, this.position.y + 0.5, this.position.z + 0.5), this.look)
+
+        if (map.get(hitPosition) !== undefined) {
+          map.set(hitPosition, 0)
+          map.updateMesh()
+        }
+      }
+    }
 
     document.addEventListener('keydown', this.onKeyDown)
     document.addEventListener('keyup', this.onKeyUp)
+    document.addEventListener('mousedown', this.mouseDown)
   }
 
   onExitScene (gameState) {
     document.removeEventListener('mousemove', this.onMouseMove)
     document.removeEventListener('keydown', this.onKeyDown)
     document.removeEventListener('keyup', this.onKeyUp)
+    document.removeEventListener('mousedown', this.mouseDown)
   }
 
   mousemove (dx, dy) {
@@ -57,10 +73,17 @@ class Player extends Thing {
     }
 
     const cosPitch = sign * Math.max(Math.abs(Math.cos(this.pitch)), 0.001)
+
+    // update the look vector
+    this.look.x = Math.sin(this.yaw) * cosPitch
+    this.look.y = -1 * Math.sin(this.pitch)
+    this.look.z = Math.cos(this.yaw) * cosPitch
+    this.look.normalize()
+
     this.camera.lookAt(
-      this.camera.position.x + Math.sin(this.yaw) * cosPitch,
-      this.camera.position.y - Math.sin(this.pitch),
-      this.camera.position.z + Math.cos(this.yaw) * cosPitch
+      this.camera.position.x + this.look.x,
+      this.camera.position.y + this.look.y,
+      this.camera.position.z + this.look.z
     )
   }
 
