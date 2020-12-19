@@ -1,7 +1,7 @@
 'use strict';
 
 const canvas = document.getElementById("theCanvas")
-const renderer = new THREE.WebGLRenderer({canvas})
+const renderer = new THREE.WebGLRenderer({canvas, antialias: true})
 const gameStateStack = new GameStateStack()
 const print = console.log
 let lastTime
