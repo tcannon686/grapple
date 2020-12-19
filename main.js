@@ -1,8 +1,8 @@
 import * as THREE from 'https://cdnjs.cloudflare.com/ajax/libs/three.js/r123/three.module.min.js'
 
 function main () {
-  const canvas = document.querySelector("#canvas")
-  const renderer = new THREE.WebGLRenderer({canvas})
+  const canvas = document.querySelector('#canvas')
+  const renderer = new THREE.WebGLRenderer({ canvas })
 
   const scene = new THREE.Scene()
 
@@ -16,7 +16,7 @@ function main () {
 
   {
     const geometry = new THREE.BoxGeometry(1, 1, 1)
-    const material = new THREE.MeshBasicMaterial({color: 0xff0000})
+    const material = new THREE.MeshBasicMaterial({ color: 0xff0000 })
 
     const cube = new THREE.Mesh(geometry, material)
     scene.add(cube)
@@ -29,11 +29,11 @@ function main () {
   function update (dt) {
     /* TODO put stuff here. */
   }
-  
-  let lastTime = performance.now()/1000.0
+
+  let lastTime = performance.now() / 1000.0
   function loop () {
     /* Calculate delta. */
-    const dt = performance.now()/1000.0 - lastTime
+    const dt = performance.now() / 1000.0 - lastTime
     lastTime += dt
 
     /* Update the canvas and camera. */
@@ -55,4 +55,4 @@ function main () {
   loop()
 }
 
-main ()
+main()
