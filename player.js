@@ -14,8 +14,10 @@ class Player extends Thing {
 
     this.position = new THREE.Vector3(0, 0, 2)
     this.look = new THREE.Vector3(0,0,0)
+    this.velocity = new THREE.Vector3(0, 0, 0)
 
     this.speed = 1.0
+    this.height = 0
 
     this.isKeyDown = {}
   }
@@ -147,6 +149,29 @@ class Player extends Thing {
         this.position.add(left)
         this.position.add(forward)
       }
+    }
+
+    /* Apply physics. */
+    this.velocity.addScaledVector(gameState.gravity, dt)
+    this.position.addScaledVector(this.velocity, dt)
+
+    /* Collision detection. */
+    if (this.position.y - this.height <= 0) {
+      this.position.y = this.height
+      this.velocity.y = 0
+    }
+
+    const overlap = gameState.map.getOverlap(
+      this.position.x, this.position.y, this.position.z)
+    if(overlap) {
+      this.position.add(overlap)
+      /* Calculate normal. */
+      const normal = overlap.clone()
+      normal.normalize()
+      const velProjNormal = this.velocity.clone()
+      velProjNormal.projectOnVector(normal)
+      velProjNormal.multiplyScalar(-1.0)
+      this.velocity.add(velProjNormal)
     }
 
     this.camera.position.copy(this.position)

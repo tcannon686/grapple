@@ -1,48 +1,48 @@
-function StoreItem(key, value) {
-  if (typeof key !== "string") {
+function StoreItem (key, value) {
+  if (typeof key !== 'string') {
     console.log(`The argument that you passed to storeItem() - ${key} is not a string.`)
   }
 
-  if (typeof value === "undefined") {
-    console.log("You cannot store undefined variables using storeItem().")
+  if (typeof value === 'undefined') {
+    console.log('You cannot store undefined variables using storeItem().')
   }
 
   const type = typeof value
   switch (type) {
-    case "number":
-    case "boolean":
+    case 'number':
+    case 'boolean':
       value = value.toString()
       break
-    case "object":
+    case 'object':
       value = JSON.stringify(value)
       break
-    case "string":
+    case 'string':
     default:
       break
   }
 
   localStorage.setItem(key, value)
-  const typeKey = `${key}typeID`;
-  localStorage.setItem(typeKey, type);
+  const typeKey = `${key}typeID`
+  localStorage.setItem(typeKey, type)
 }
 
-function GetItem(key) {
+function GetItem (key) {
   let value = localStorage.getItem(key)
-  let type = localStorage.getItem(`${key}typeID`)
+  const type = localStorage.getItem(`${key}typeID`)
 
-  //print(typeof value)
+  // print(typeof value)
   if (value !== null) {
     switch (type) {
-      case "number":
+      case 'number':
         value = parseInt(value)
         break
-      case "boolean":
-        value = value === "true"
+      case 'boolean':
+        value = value === 'true'
         break
-      case "object":
+      case 'object':
         value = JSON.parse(value)
         break
-      case "string":
+      case 'string':
       default:
         break
     }

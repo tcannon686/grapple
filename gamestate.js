@@ -141,6 +141,38 @@ class GameMap {
       this.map.arrayData[vx][vy][vz] = value
     }
   }
+
+  getBlock (x,y,z) {
+    if (x >= 0 && y >= 0 && z >= 0 &&
+      x < this.map.arrayData.length &&
+      y < this.map.arrayData[x].length &&
+      z < this.map.arrayData[x][y].length
+    ) {
+      return this.map.arrayData[x][y][z]
+    } else {
+      return null
+    }
+  }
+
+  getOverlap(x, y, z) {
+    const pos = [x + 0.5, y + 0.5, z + 0.5]
+    const min = pos.map(Math.floor)
+    const max = pos.map(Math.ceil)
+
+    if (this.getBlock(...min)) {
+      /* Move to the shortest of the sides. */
+      const deltas = min.map((x, i) => x - pos[i])
+        .concat(max.map((x, i) => x - pos[i]))
+      const minIndex = deltas.reduce(
+        (m, e, i, a) => Math.abs(e) < Math.abs(a[m]) ? i : m,
+        0)
+      const moveAmount = new THREE.Vector3()
+      moveAmount.setComponent(minIndex % 3, deltas[minIndex])
+
+      return moveAmount
+    }
+    return null
+  }
 }
 
 class GameState {
@@ -155,6 +187,8 @@ class GameState {
     this.things = []
     /* Add the player. */
     this.add(new Player())
+
+    this.gravity = new THREE.Vector3(0, -9.8, 0)
   }
 
   update (dt) {
