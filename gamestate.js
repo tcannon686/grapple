@@ -1,3 +1,5 @@
+'use strict';
+
 class GameStateStack {
   constructor () {
     this.gameStateStack = []
@@ -25,39 +27,50 @@ class GameStateStack {
   }
 }
 
-class GameState {
-  constructor () {
-    this.scene = new THREE.Scene()
-    this.camera = new THREE.PerspectiveCamera(90, canvas.width / canvas.height, 0.1, 1000)
-    this.pitch = 0
-    this.yaw = -1*Math.PI
+class GameMap {
+  constructor (width, height) {
+    this.map = []
+    this.geometry = new THREE.Geometry()
 
-    // define the map
-    const map = []
-    const MapSize = 20
-    const MapHeight = 20
-
-    // const material = new THREE.MeshBasicMaterial({ color: 0x050505 })
-    const material = new THREE.MeshNormalMaterial()
-    let totalGeometry = new THREE.Geometry()
-
-    for (let x = 0; x < MapSize; x++) {
-      map[x] = []
-      for (let y = 0; y < MapHeight; y++) {
-        map[x][y] = []
-        for (let z = 0; z < MapSize; z++) {
-          map[x][y][z] = Math.floor(Math.random() + 0.5)
+    for (let x = 0; x < width; x++) {
+      this.map[x] = []
+      for (let y = 0; y < height; y++) {
+        this.map[x][y] = []
+        for (let z = 0; z < width; z++) {
+          this.map[x][y][z] = Math.floor(Math.random() + 0.5)
 
           // only add a block if there's supposed to be a block here
-          if (map[x][y][z] === 1) {
-            totalGeometry.merge(new THREE.BoxGeometry(1,1,1).translate(x,y,z))
+          if (this.map[x][y][z] === 1) {
+            this.geometry.merge(new THREE.BoxGeometry(1,1,1).translate(x,y,z))
           }
         }
       }
     }
-    this.scene.add(new THREE.Mesh(totalGeometry, material))
+  }
 
+  getMesh () {
+    let material = new THREE.MeshNormalMaterial()
+    return new THREE.Mesh(this.geometry, material)
+  }
+
+  getBlock (x,y,z) {
+    return this.map[x][y][z]
+  }
+}
+
+class GameState {
+  constructor () {
+    this.scene = new THREE.Scene()
+
+    // set up the camera
+    this.camera = new THREE.PerspectiveCamera(90, canvas.width / canvas.height, 0.1, 1000)
+    this.pitch = 0
+    this.yaw = -1*Math.PI
     this.camera.position.z = 2
+
+    // set up the map
+    this.map = new GameMap(20,20)
+    this.scene.add(this.map.getMesh())
   }
 
   update () {

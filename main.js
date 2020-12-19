@@ -1,3 +1,5 @@
+'use strict';
+
 const canvas = document.getElementById("theCanvas")
 const renderer = new THREE.WebGLRenderer({canvas})
 const gameStateStack = new GameStateStack()
@@ -48,7 +50,7 @@ document.addEventListener("mousemove", (event) => {
   if (state) {
     state.mousemove(event.movementX, event.movementY)
   }
-}, false);
+}, false)
 
 // locks the pointer when you click
 canvas.onclick = () => {
