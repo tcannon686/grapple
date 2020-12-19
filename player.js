@@ -99,6 +99,12 @@ class Player extends Thing {
 
         this.camera.matrix.extractBasis(left, up, forward)
 
+        left.y = 0
+        forward.y = 0
+
+        left.normalize()
+        forward.normalize()
+
         left.multiplyScalar(dirX)
         forward.multiplyScalar(dirZ)
 
