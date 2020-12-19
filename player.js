@@ -191,6 +191,7 @@ class Player extends Thing {
     }
 
     this.camera.position.copy(this.position)
+    this.camera.position.y += this.height / 2 - 0.5
 
     return true
   }
