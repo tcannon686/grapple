@@ -12,7 +12,7 @@ class Thing {
   }
 
   /* Returns true if the thing should be removed this frame or not. */
-  update (dt) {
+  update (dt, gameState) {
     return true
   }
 }

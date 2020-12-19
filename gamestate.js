@@ -73,7 +73,7 @@ class GameState {
 
   update (dt) {
     for (let i = 0; i < this.things.length; i++) {
-      if (this.things[i].update && !this.things[i].update(dt)) {
+      if (this.things[i].update && !this.things[i].update(dt, this)) {
         this.things[i].splice(i--, 1)
       }
     }
