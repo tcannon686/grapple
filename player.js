@@ -250,6 +250,7 @@ class Player extends Thing {
       }
     }
 
+    // walls
     for (let x=-1*width; x<=1*width; x+=0.5*width) {
       for (let y=-0.9*this.height; y<=0; y+=0.1*this.height) {
         for (let z=-1*width; z<=1*width; z+=0.5*width) {
@@ -266,7 +267,10 @@ class Player extends Thing {
 
     this.position.add(this.velocity)
     this.position.y = Math.max(this.position.y, this.height)
-    this.camera.position.copy(this.position)
+    //this.camera.position.copy(this.position)
+    this.camera.position.x = this.position.x
+    this.camera.position.y = this.position.y
+    this.camera.position.z = this.position.z
 
     // console.log(this.camera.rotation)
 
