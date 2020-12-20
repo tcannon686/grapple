@@ -191,7 +191,11 @@ class GameState {
     /* Add the player. */
     this.add(new Player())
 
+    this.add(new Hook())
+
     this.gravity = new THREE.Vector3(0, -0.005, 0)
+
+    // console.log(this.things)
   }
 
   update (dt) {
