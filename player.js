@@ -1,27 +1,31 @@
-
 class Player extends Thing {
   constructor () {
     super()
 
-    this.camera = new THREE.PerspectiveCamera(
-      90,
-      canvas.width / canvas.height,
-      0.001,
-      1000)
-
+    this.camera = new THREE.PerspectiveCamera(90, canvas.width / canvas.height, 0.001, 1000)
     this.pitch = 0
     this.yaw = 0
 
-    this.position = new THREE.Vector3(0, 0, 2)
+    this.position = new THREE.Vector3(-2, 5, -2)
     this.velocity = new THREE.Vector3(0, 0, 0)
     this.look = new THREE.Vector3(0,0,0)
 
-    this.speed = 0.2
-    this.height = 0.4
-    this.width = 0.125
+    this.speed = 0.25
+    this.height = 0.28
+    this.width = 0.09
+    this.jumpSpeed = 0.085
+
+    this.beingPulledByHook = false
+
+    // create grappling hook and add it to the gamestate
+    this.hook = new Hook()
 
     this.isKeyDown = {}
     this.onGround = false
+  }
+
+  controllable () {
+    return !this.beingPulledByHook && this.onGround
   }
 
   onEnterScene (gameState) {
@@ -37,8 +41,19 @@ class Player extends Thing {
       'mousemove',
       this.onMouseMove)
 
-    this.onKeyDown = (e) => this.isKeyDown[e.key.toUpperCase()] = true
-    this.onKeyUp = (e) => this.isKeyDown[e.key.toUpperCase()] = false
+    this.onKeyDown = (e) => {
+      this.isKeyDown[e.key.toUpperCase()] = true
+
+      // toggle editing level by pressing E
+      if (e.keyCode == 69) {
+        DebugModes.editingLevel = !DebugModes.editingLevel
+      }
+    }
+
+    this.onKeyUp = (e) => {
+      this.isKeyDown[e.key.toUpperCase()] = false
+    }
+
     this.mouseDown = (e) => {
       let map = gameState.map
 
@@ -63,6 +78,14 @@ class Player extends Thing {
             map.updateMesh()
           }
         }
+      } else {
+        let hitPosition = map.raycast(this.position, this.look)
+
+        //this.hook.reelIn()
+
+        if (map.get(hitPosition) !== undefined) {
+          this.hook.shootTowardsPoint(hitPosition)
+        }
       }
     }
 
@@ -77,8 +100,6 @@ class Player extends Thing {
     document.removeEventListener('keyup', this.onKeyUp)
     document.removeEventListener('mousedown', this.mouseDown)
   }
-
-  
 
   mousemove (dx, dy) {
     this.yaw += dx / -500
@@ -99,7 +120,6 @@ class Player extends Thing {
       this.camera.position.y + this.look.y,
       this.camera.position.z + this.look.z
     )
-
   }
 
   update (dt, gameState) {
@@ -107,7 +127,8 @@ class Player extends Thing {
     this.camera.aspect = canvas.width / canvas.height
     this.camera.updateProjectionMatrix()
 
-    /* Do controls. */
+    // basic movement
+    if (this.controllable())
     {
       let dirX = 0.0
       let dirZ = 0.0
@@ -125,15 +146,10 @@ class Player extends Thing {
       }
 
       if(this.isKeyDown[' '] && this.onGround) {
-        this.velocity.y = 0.125
+        this.velocity.y = this.jumpSpeed
       }
 
       const len = Math.sqrt(dirX * dirX + dirZ * dirZ)
-
-      /* friction */
-      /* TODO only when on ground */
-      this.velocity.x *= 0.9
-      this.velocity.z *= 0.9
 
       if (len > 0) {
         dirX *= this.speed * dt / len
@@ -159,8 +175,16 @@ class Player extends Thing {
       }
     }
 
-    /* Apply physics. */
-    this.velocity.add(gameState.gravity)
+    // gravity
+    if (!this.beingPulledByHook) {
+      this.velocity.add(gameState.gravity)
+    }
+
+    // friction
+    if (this.onGround) {
+      this.velocity.x *= 0.9
+      this.velocity.z *= 0.9
+    }
 
     const map = gameState.map
     const width = this.width
@@ -178,9 +202,9 @@ class Player extends Thing {
       }
     }
 
-    const headroom = 0.1
-
     // ceiling
+    const headroom = 0.1
+    this.onCeiling = false
     if (this.velocity.y > 0) {
       if (map.isSolidCoord(this.position.x + width, this.position.y + this.velocity.y + headroom, this.position.z + width)
       || map.isSolidCoord(this.position.x + width, this.position.y + this.velocity.y + headroom, this.position.z - width)
@@ -188,39 +212,37 @@ class Player extends Thing {
       || map.isSolidCoord(this.position.x - width, this.position.y + this.velocity.y + headroom, this.position.z - width)) {
         this.position.y = Math.floor(this.position.y + this.velocity.y + headroom) - headroom
         this.velocity.y = -0.01
+        this.onCeiling = true
       }
     }
 
     // walls
+    this.onWall = false
     for (let x=-1*width; x<=1*width; x+=0.5*width) {
       for (let y=-0.9*this.height; y<=0; y+=0.1*this.height) {
         for (let z=-1*width; z<=1*width; z+=0.5*width) {
           if (map.isSolidCoord(this.position.x + x + this.velocity.x, this.position.y + y, this.position.z + z)) {
             this.velocity.x = 0
+            this.onWall = true
           }
 
           if (map.isSolidCoord(this.position.x + x, this.position.y + y, this.position.z + z + this.velocity.z)) {
             this.velocity.z = 0
+            this.onWall = true
           }
         }
       }
     }
 
+    // used to know when hook should stop reeling in player
+    this.collided = this.onGround || this.onCeiling || this.onWall
+
     this.position.add(this.velocity)
     this.position.y = Math.max(this.position.y, this.height)
-    //this.camera.position.copy(this.position)
     this.camera.position.x = this.position.x
     this.camera.position.y = this.position.y
     this.camera.position.z = this.position.z
 
-    // console.log(this.camera.rotation)
-
-
-    
-
     return true
   }
-
-
-  
 }

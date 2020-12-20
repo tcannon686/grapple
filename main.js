@@ -12,7 +12,7 @@ let TimeAccumulator = 0
 const TimeStep = 1/60
 
 const DebugModes = {
-  editingLevel: true,
+  editingLevel: false,
   flying: true
 }
 

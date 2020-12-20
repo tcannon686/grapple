@@ -158,7 +158,7 @@ class GameMap {
   }
 
   getOverlap(x, y, z) {
-    const pos = [x + 0.5, y + 0.5, z + 0.5]
+    const pos = [x, y, z]
     const min = pos.map(Math.floor)
     const max = pos.map(Math.ceil)
 
@@ -189,9 +189,9 @@ class GameState {
 
     this.things = []
     /* Add the player. */
-    this.add(new Player())
-
-    this.add(new Hook())
+    this.player = new Player() 
+    this.add(this.player)
+    this.add(this.player.hook)
 
     this.gravity = new THREE.Vector3(0, -0.005, 0)
 
