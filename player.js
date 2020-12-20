@@ -25,6 +25,26 @@ class Player extends Thing {
   onEnterScene (gameState) {
     gameState.camera = this.camera
 
+    const geometry = new THREE.BoxGeometry( 1, 1, 1 );
+    const material = new THREE.MeshBasicMaterial( {color: 0x00ff00, depthTest:false} );
+    this.cube = new THREE.Mesh( geometry, material )
+    // this.cube.position.set(0,2,0)
+    this.cube.scale.set(0.15,0.15,0.15)
+    this.cube.geometry.translate(2, -1.5 ,3)
+    gameState.scene.add(this.cube)
+
+
+    const geometryCrosshair = new THREE.BoxGeometry( 1, 1, 1 );
+    const materialCrosshair = new THREE.MeshBasicMaterial( {color: 0xffffff, depthTest:false} );
+    this.crosshair = new THREE.Mesh(geometryCrosshair, materialCrosshair)
+    this.crosshair.scale.set(0.01,0.01,0.01)
+    gameState.scene.add(this.crosshair)
+
+    var gridHelper = new THREE.GridHelper( 4, 10 );
+    gameState.scene.add( gridHelper );
+    gameState.scene.add( new THREE.AxesHelper() );
+
+
     // send mousemove event to the top gamestate
     this.onMouseMove = (e) => this.mousemove(e.movementX, e.movementY)
     document.addEventListener(
@@ -192,6 +212,31 @@ class Player extends Thing {
 
     this.camera.position.copy(this.position)
     this.camera.position.y += this.height / 2 - 0.5
+
+    // console.log(this.camera.rotation)
+
+    this.cube.position.set(
+      this.camera.position.x + this.look.x,
+      this.camera.position.y + this.look.y,
+      this.camera.position.z + this.look.z
+    );
+    this.cube.rotation.set(
+      this.camera.rotation.x,
+      this.camera.rotation.y,
+      this.camera.rotation.z
+    );
+
+    this.crosshair.position.set(
+      this.camera.position.x + this.look.x,
+      this.camera.position.y + this.look.y,
+      this.camera.position.z + this.look.z
+    );
+    this.crosshair.rotation.set(
+      this.camera.rotation.x,
+      this.camera.rotation.y,
+      this.camera.rotation.z
+    );
+
 
     return true
   }
