@@ -41,12 +41,9 @@ class GameMap {
     if (get) {
       this.map = get
       print(this.map)
-    } else if (confirm("Create a new map named \"" + this.name + "\"?")) {
-      let width = parseInt(prompt("Width of \"" + this.name + "\"", "20"))
-      let height = parseInt(prompt("Height of \"" + this.name + "\"", "20"))
-
+    } else {
       this.map = {}
-      this.createRandom(width,height)
+      this.createRandom(20,20)
     }
 
     if (DebugModes.editingLevel) {
@@ -106,6 +103,7 @@ class GameMap {
       }
     }
 
+    this.geometry.translate(+0.5,+0.5,+0.5)
     this.mesh.geometry = this.geometry
   }
 
@@ -124,16 +122,24 @@ class GameMap {
   }
 
   get (vector) {
-    let vx = Math.floor(vector.x)
-    let vy = Math.floor(vector.y)
-    let vz = Math.floor(vector.z)
-    return this.map.arrayData[vx] && this.map.arrayData[vx][vy] && this.map.arrayData[vx][vy][vz]
+    return this.getCoord(vector.x,vector.y,vector.z)
   }
 
   set (vector, value) {
-    let vx = Math.floor(vector.x)
-    let vy = Math.floor(vector.y)
-    let vz = Math.floor(vector.z)
+    this.setCoord(vector.x,vector.y,vector.z, value)
+  }
+
+  getCoord (x,y,z) {
+    let vx = Math.floor(x)
+    let vy = Math.floor(y)
+    let vz = Math.floor(z)
+    return this.map.arrayData[vx] && this.map.arrayData[vx][vy] && this.map.arrayData[vx][vy][vz]
+  }
+
+  setCoord (x,y,z, value) {
+    let vx = Math.floor(x)
+    let vy = Math.floor(y)
+    let vz = Math.floor(z)
     if (this.map.arrayData[vx] !== undefined
       && this.map.arrayData[vx][vy] !== undefined
       && this.map.arrayData[vx][vy][vz] !== undefined)
@@ -142,16 +148,13 @@ class GameMap {
     }
   }
 
-  getBlock (x,y,z) {
-    if (x >= 0 && y >= 0 && z >= 0 &&
-      x < this.map.arrayData.length &&
-      y < this.map.arrayData[x].length &&
-      z < this.map.arrayData[x][y].length
-    ) {
-      return this.map.arrayData[x][y][z]
-    } else {
-      return null
-    }
+  isSolid (vector) {
+    return this.isSolidCoord(vector.x,vector.y,vector.z)
+  }
+
+  isSolidCoord (x,y,z) {
+    let get = this.getCoord(x,y,z)
+    return get || y <= 0
   }
 
   getOverlap(x, y, z) {
@@ -159,8 +162,8 @@ class GameMap {
     const min = pos.map(Math.floor)
     const max = pos.map(Math.ceil)
 
-    if (this.getBlock(...min)) {
-      /* Move to the shortest of the sides. */
+    if (this.getCoord(...min)) {
+      // Move to the shortest of the sides.
       const deltas = min.map((x, i) => x - pos[i])
         .concat(max.map((x, i) => x - pos[i]))
       const minIndex = deltas.reduce(
@@ -188,7 +191,7 @@ class GameState {
     /* Add the player. */
     this.add(new Player())
 
-    this.gravity = new THREE.Vector3(0, -9.8, 0)
+    this.gravity = new THREE.Vector3(0, -0.005, 0)
   }
 
   update (dt) {

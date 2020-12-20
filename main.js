@@ -8,6 +8,8 @@ const print = console.log
 
 let lastTime
 let hasLockedPointer = false
+let TimeAccumulator = 0
+const TimeStep = 1/60
 
 const DebugModes = {
   editingLevel: true,
@@ -45,7 +47,14 @@ function Loop () {
   renderer.setSize(canvas.width, canvas.height)
 
   /* Update then render. */
-  Update(dt)
+  TimeAccumulator += dt
+
+  // fixed timestep
+  while (TimeAccumulator > TimeStep) {
+    TimeAccumulator -= TimeStep
+    Update(TimeStep)
+  }
+
   Render()
 
   requestAnimationFrame(Loop)

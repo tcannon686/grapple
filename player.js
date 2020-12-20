@@ -6,20 +6,22 @@ class Player extends Thing {
     this.camera = new THREE.PerspectiveCamera(
       90,
       canvas.width / canvas.height,
-      0.1,
+      0.001,
       1000)
 
     this.pitch = 0
     this.yaw = 0
 
     this.position = new THREE.Vector3(0, 0, 2)
-    this.look = new THREE.Vector3(0,0,0)
     this.velocity = new THREE.Vector3(0, 0, 0)
+    this.look = new THREE.Vector3(0,0,0)
 
-    this.speed = 1.0
-    this.height = 1.7
+    this.speed = 0.2
+    this.height = 0.4
+    this.width = 0.125
 
     this.isKeyDown = {}
+    this.onGround = false
   }
 
   onEnterScene (gameState) {
@@ -60,7 +62,7 @@ class Player extends Thing {
         // destroy a block
         if (e.buttons == 1) {
           // add 0.5 for rounding, so that it hits the block in the middle of the screen
-          let hitPosition = map.raycast(new THREE.Vector3(this.position.x + 0.5, this.position.y + 0.5, this.position.z + 0.5), this.look)
+          let hitPosition = map.raycast(this.position, this.look)
 
           if (map.get(hitPosition) !== undefined) {
             map.set(hitPosition, 0)
@@ -71,7 +73,7 @@ class Player extends Thing {
         // place a block
         if (e.buttons == 2) {
           // add 0.5 for rounding, so that it hits the block in the middle of the screen
-          let hitPosition = map.raycast(new THREE.Vector3(this.position.x + 0.5, this.position.y + 0.5, this.position.z + 0.5), this.look)
+          let hitPosition = map.raycast(this.position, this.look)
           hitPosition = hitPosition.addScaledVector(this.look, -0.1)
 
           if (map.get(hitPosition) !== undefined) {
@@ -146,12 +148,17 @@ class Player extends Thing {
         dirZ -= 1.0
       }
 
-      /* TODO jump? */
-      if(this.isKeyDown[' ']) {
-        this.velocity.y = 1
+      if(this.isKeyDown[' '] && this.onGround) {
+        this.velocity.y = 0.125
       }
 
       const len = Math.sqrt(dirX * dirX + dirZ * dirZ)
+
+      /* friction */
+      /* TODO only when on ground */
+      this.velocity.x *= 0.9
+      this.velocity.z *= 0.9
+
       if (len > 0) {
         dirX *= this.speed * dt / len
         dirZ *= this.speed * dt / len
@@ -171,34 +178,37 @@ class Player extends Thing {
         left.multiplyScalar(dirX)
         forward.multiplyScalar(dirZ)
 
-        this.position.add(left)
-        this.position.add(forward)
+        this.velocity.add(left)
+        this.velocity.add(forward)
       }
     }
 
     /* Apply physics. */
-    this.velocity.addScaledVector(gameState.gravity, dt)
-    this.position.addScaledVector(this.velocity, dt)
+    //this.velocity.addScaledVector(gameState.gravity, dt)
+    this.velocity.add(gameState.gravity)
 
     /* Collision detection. */
-    if (this.position.y - this.height / 2 + 0.5 <= 0) {
+    /*
+    if (this.position.y - this.height / 2 + 0.5 <= 0 && this.velocity.y < 0) {
       this.position.y = this.height / 2 - 0.5
       this.velocity.y = 0
     }
+    */
 
-    const samples = 3 /* The number of points along each axis. */
+    /*
+    const samples = 4 // The number of points along each axis.
     const mid = Math.floor(samples / 2)
 
     for(let i = 0; i < samples; i ++) {
       for(let j = 0; j < samples; j ++) {
         for(let k = 0; k < samples; k ++) {
           const overlap = gameState.map.getOverlap(
-            this.position.x + (i - mid) * (1 / samples),
+            this.position.x + (i - mid) * (1 / samples) * this.width,
             this.position.y - (j - mid) * (1 / samples) * this.height,
-            this.position.z + (k - mid) * (1 / samples))
+            this.position.z + (k - mid) * (1 / samples) * this.width)
           if(overlap) {
             this.position.add(overlap)
-            /* Calculate normal. */
+            // Calculate normal.
             const normal = overlap.clone()
             normal.normalize()
             const velProjNormal = this.velocity.clone()
@@ -209,9 +219,54 @@ class Player extends Thing {
         }
       }
     }
+    */
 
+    const map = gameState.map
+    const width = this.width
+
+    // floor
+    this.onGround = false
+    if (this.velocity.y < 0) {
+      if (map.isSolidCoord(this.position.x + width, this.position.y + this.velocity.y - this.height, this.position.z + width)
+      || map.isSolidCoord(this.position.x + width, this.position.y + this.velocity.y - this.height, this.position.z - width)
+      || map.isSolidCoord(this.position.x - width, this.position.y + this.velocity.y - this.height, this.position.z + width)
+      || map.isSolidCoord(this.position.x - width, this.position.y + this.velocity.y - this.height, this.position.z - width)) {
+        this.position.y = Math.ceil(this.position.y + this.velocity.y - this.height) + this.height
+        this.velocity.y = 0
+        this.onGround = true
+      }
+    }
+
+    const headroom = 0.1
+
+    // ceiling
+    if (this.velocity.y > 0) {
+      if (map.isSolidCoord(this.position.x + width, this.position.y + this.velocity.y + headroom, this.position.z + width)
+      || map.isSolidCoord(this.position.x + width, this.position.y + this.velocity.y + headroom, this.position.z - width)
+      || map.isSolidCoord(this.position.x - width, this.position.y + this.velocity.y + headroom, this.position.z + width)
+      || map.isSolidCoord(this.position.x - width, this.position.y + this.velocity.y + headroom, this.position.z - width)) {
+        this.position.y = Math.floor(this.position.y + this.velocity.y + headroom) - headroom
+        this.velocity.y = -0.05
+      }
+    }
+
+    for (let x=-1*width; x<=1*width; x+=0.5*width) {
+      for (let y=0; y<this.height-headroom; y+=0.1) {
+        for (let z=-1*width; z<=1*width; z+=0.5*width) {
+          if (map.isSolidCoord(this.position.x + x + this.velocity.x, this.position.y + y, this.position.z + z)) {
+            this.velocity.x = 0
+          }
+
+          if (map.isSolidCoord(this.position.x + x, this.position.y + y, this.position.z + z + this.velocity.z)) {
+            this.velocity.z = 0
+          }
+        }
+      }
+    }
+
+    this.position.add(this.velocity)
+    this.position.y = Math.max(this.position.y, this.height)
     this.camera.position.copy(this.position)
-    this.camera.position.y += this.height / 2 - 0.5
 
     // console.log(this.camera.rotation)
 
