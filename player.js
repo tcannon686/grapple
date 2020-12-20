@@ -96,6 +96,8 @@ class Player extends Thing {
     document.removeEventListener('mousedown', this.mouseDown)
   }
 
+  
+
   mousemove (dx, dy) {
     this.yaw += dx / -500
     this.pitch += dy / 300
@@ -124,6 +126,8 @@ class Player extends Thing {
       this.camera.position.y + this.look.y,
       this.camera.position.z + this.look.z
     )
+    this.updateGun()
+
   }
 
   update (dt, gameState) {
@@ -270,6 +274,14 @@ class Player extends Thing {
 
     // console.log(this.camera.rotation)
 
+    this.updateGun()
+
+    
+
+    return true
+  }
+
+  updateGun () {
     this.cube.position.set(
       this.camera.position.x + this.look.x,
       this.camera.position.y + this.look.y,
@@ -291,8 +303,6 @@ class Player extends Thing {
       this.camera.rotation.y,
       this.camera.rotation.z
     );
-
-
-    return true
   }
+  
 }
