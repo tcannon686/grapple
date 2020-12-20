@@ -173,6 +173,7 @@ class GameMap {
 
       return moveAmount
     }
+
     return null
   }
 }
@@ -187,6 +188,7 @@ class GameState {
     this.scene.add(this.map.mesh)
 
     this.things = []
+
     /* Add the player. */
     this.player = new Player() 
     this.add(this.player)
@@ -194,7 +196,8 @@ class GameState {
 
     this.gravity = new THREE.Vector3(0, -0.005, 0)
 
-    // console.log(this.things)
+    this.scene.add(new THREE.GridHelper(4, 10))
+    this.scene.add(new THREE.AxesHelper())
   }
 
   update () {

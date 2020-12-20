@@ -32,10 +32,6 @@ class Player extends Thing {
   onEnterScene (gameState) {
     gameState.camera = this.camera
 
-    var gridHelper = new THREE.GridHelper( 4, 10 );
-    gameState.scene.add( gridHelper );
-    gameState.scene.add( new THREE.AxesHelper() );
-
     // send mousemove event to the top gamestate
     this.onMouseMove = (e) => this.mousemove(e.movementX, e.movementY)
     document.addEventListener(
