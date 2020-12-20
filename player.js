@@ -45,7 +45,6 @@ class Player extends Thing {
       if (DebugModes.editingLevel) {
         // destroy a block
         if (e.buttons == 1) {
-          // add 0.5 for rounding, so that it hits the block in the middle of the screen
           let hitPosition = map.raycast(this.position, this.look)
 
           if (map.get(hitPosition) !== undefined) {
@@ -56,7 +55,6 @@ class Player extends Thing {
 
         // place a block
         if (e.buttons == 2) {
-          // add 0.5 for rounding, so that it hits the block in the middle of the screen
           let hitPosition = map.raycast(this.position, this.look)
           hitPosition = hitPosition.addScaledVector(this.look, -0.1)
 
@@ -88,16 +86,7 @@ class Player extends Thing {
     this.pitch = Math.min(this.pitch, Math.PI / 2)
     this.pitch = Math.max(this.pitch, Math.PI / -2)
 
-    let sign = Math.cos(this.pitch)
-    if (sign > 0) {
-      sign = 1
-    } else if (sign < 0) {
-      sign = -1
-    } else {
-      sign = 0
-    }
-
-    const cosPitch = sign * Math.max(Math.abs(Math.cos(this.pitch)), 0.001)
+    const cosPitch = Math.sign(Math.cos(this.pitch)) * Math.max(Math.abs(Math.cos(this.pitch)), 0.001)
 
     // update the look vector
     this.look.x = Math.sin(this.yaw) * cosPitch
@@ -171,42 +160,7 @@ class Player extends Thing {
     }
 
     /* Apply physics. */
-    //this.velocity.addScaledVector(gameState.gravity, dt)
     this.velocity.add(gameState.gravity)
-
-    /* Collision detection. */
-    /*
-    if (this.position.y - this.height / 2 + 0.5 <= 0 && this.velocity.y < 0) {
-      this.position.y = this.height / 2 - 0.5
-      this.velocity.y = 0
-    }
-    */
-
-    /*
-    const samples = 4 // The number of points along each axis.
-    const mid = Math.floor(samples / 2)
-
-    for(let i = 0; i < samples; i ++) {
-      for(let j = 0; j < samples; j ++) {
-        for(let k = 0; k < samples; k ++) {
-          const overlap = gameState.map.getOverlap(
-            this.position.x + (i - mid) * (1 / samples) * this.width,
-            this.position.y - (j - mid) * (1 / samples) * this.height,
-            this.position.z + (k - mid) * (1 / samples) * this.width)
-          if(overlap) {
-            this.position.add(overlap)
-            // Calculate normal.
-            const normal = overlap.clone()
-            normal.normalize()
-            const velProjNormal = this.velocity.clone()
-            velProjNormal.projectOnVector(normal)
-            velProjNormal.multiplyScalar(-1.0)
-            this.velocity.add(velProjNormal)
-          }
-        }
-      }
-    }
-    */
 
     const map = gameState.map
     const width = this.width
