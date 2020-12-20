@@ -40,7 +40,6 @@ class GameMap {
     let get = Levels[this.name]
     if (get) {
       this.map = get
-      print(this.map)
     } else {
       this.map = {}
       this.createRandom(20,20)
@@ -198,9 +197,9 @@ class GameState {
     // console.log(this.things)
   }
 
-  update (dt) {
+  update () {
     for (let i = 0; i < this.things.length; i++) {
-      if (this.things[i].update && !this.things[i].update(dt, this)) {
+      if (this.things[i].update && !this.things[i].update(this)) {
         this.things[i].splice(i--, 1)
       }
     }

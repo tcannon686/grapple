@@ -1,4 +1,3 @@
-
 class Thing {
   constructor () {
   }
@@ -12,7 +11,7 @@ class Thing {
   }
 
   /* Returns true if the thing should be removed this frame or not. */
-  update (dt, gameState) {
+  update (gameState) {
     return true
   }
 }

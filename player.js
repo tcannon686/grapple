@@ -10,7 +10,7 @@ class Player extends Thing {
     this.velocity = new THREE.Vector3(0, 0, 0)
     this.look = new THREE.Vector3(0,0,0)
 
-    this.speed = 0.25
+    this.speed = 0.005
     this.height = 0.28
     this.width = 0.09
     this.jumpSpeed = 0.085
@@ -22,10 +22,11 @@ class Player extends Thing {
 
     this.isKeyDown = {}
     this.onGround = false
+    this.wasOnGround = false
   }
 
   controllable () {
-    return !this.beingPulledByHook && this.onGround
+    return !this.beingPulledByHook
   }
 
   onEnterScene (gameState) {
@@ -79,13 +80,8 @@ class Player extends Thing {
           }
         }
       } else {
-        let hitPosition = map.raycast(this.position, this.look)
-
         //this.hook.reelIn()
-
-        if (map.get(hitPosition) !== undefined) {
-          this.hook.shootTowardsPoint(hitPosition)
-        }
+        this.hook.shoot(this.look)
       }
     }
 
@@ -122,7 +118,7 @@ class Player extends Thing {
     )
   }
 
-  update (dt, gameState) {
+  update (gameState) {
     // Pass for now.
     this.camera.aspect = canvas.width / canvas.height
     this.camera.updateProjectionMatrix()
@@ -152,8 +148,8 @@ class Player extends Thing {
       const len = Math.sqrt(dirX * dirX + dirZ * dirZ)
 
       if (len > 0) {
-        dirX *= this.speed * dt / len
-        dirZ *= this.speed * dt / len
+        dirX *= this.speed / len
+        dirZ *= this.speed / len
 
         const left = new THREE.Vector3()
         const forward = new THREE.Vector3()
@@ -181,13 +177,15 @@ class Player extends Thing {
     }
 
     // friction
-    if (this.onGround) {
+    if (!this.beingPulledByHook) {
       this.velocity.x *= 0.9
       this.velocity.z *= 0.9
     }
 
     const map = gameState.map
     const width = this.width
+
+    this.wasOnGround = this.onGround
 
     // floor
     this.onGround = false
@@ -234,11 +232,14 @@ class Player extends Thing {
       }
     }
 
-    // used to know when hook should stop reeling in player
-    this.collided = this.onGround || this.onCeiling || this.onWall
-
     this.position.add(this.velocity)
+
+    const worldFloor = 0
     this.position.y = Math.max(this.position.y, this.height)
+    if (this.position.y <= worldFloor + this.height) {
+      this.onGround = true
+    }
+
     this.camera.position.x = this.position.x
     this.camera.position.y = this.position.y
     this.camera.position.z = this.position.z

@@ -8,16 +8,14 @@ class Hook extends Thing {
     super()
     this.state = HOOK_HOLDING
     this.shootDirection = null
-    this.shootTarget = null
     this.reelDirection = null
-    this.shootTargetLastDistance = Infinity
   }
 
   /* Called when the thing is added to the gamestate's thing list. */
   onEnterScene (gameState) {
     this.handModel = createCube([1,1,1],0x3366bb,false)
     this.handModel.scale.set(0.15,0.15,0.25)
-    this.handModel.geometry.translate(2, -1.5 ,3)
+    this.handModel.geometry.translate(2, -1.5, 3)
     gameState.scene.add(this.handModel)
 
     this.shootModel = createCube([1,1,1],0x4488ff,true)
@@ -37,25 +35,17 @@ class Hook extends Thing {
   }
 
   /* Returns true if the thing should be removed this frame or not. */
-  update (dt, gameState) {
+  update (gameState) {
   	this.updateGun(gameState)
 
     if (this.state == HOOK_SHOOTING) {
       // move in the direction being shot
       this.shootModel.position.add(this.shootDirection)
 
-      // determine if hook has hit target point
-      // by either checking if distance to target point is below a certain threshold,
-      // or if the hook is now moving away from the target
-      let distance = this.shootModel.position.distanceTo(this.shootTarget)
-      if (distance <= this.shootDirection.length() || distance > this.shootTargetLastDistance) {
-        this.shootModel.position.x = this.shootTarget.x
-        this.shootModel.position.y = this.shootTarget.y
-        this.shootModel.position.z = this.shootTarget.z
-
+      if (gameState.map.isSolid(this.shootModel.position)) {
         // move to the surface of the block
-        let hookMoveToSurface = gameState.map.getOverlap(this.shootTarget.x, this.shootTarget.y, this.shootTarget.z)
-        print(hookMoveToSurface)
+        let hookMoveToSurface = gameState.map.getOverlap(this.shootModel.position.x, this.shootModel.position.y, this.shootModel.position.z)
+
         if (hookMoveToSurface) {
           this.shootModel.position.add(hookMoveToSurface)
         }
@@ -63,13 +53,19 @@ class Hook extends Thing {
         this.state = HOOK_LATCHED
         this.reelIn()
       }
-      this.shootTargetLastDistance = distance
+
+      // if distance is greater than max distance, just give up
+      if (gameState.player.position.distanceTo(this.shootModel.position) > 8) {
+        this.reset()
+      }
     }
 
-    if (this.state == HOOK_REELING && gameState.player.collided) {
-      gameState.player.beingPulledByHook = false
-      gameState.scene.remove(this.shootModel)
-      this.state = HOOK_HOLDING
+    if (this.state == HOOK_REELING) {
+      let player = gameState.player
+
+      if (!player.velocity.equals(this.pullingVelocity)) {
+        this.reset()
+      }
     }
 
     return true
@@ -107,15 +103,15 @@ class Hook extends Thing {
     )
   }
 
-  shootTowardsPoint (target) {
+  shoot (look) {
     // can't shoot hook if not holding it!
     if (this.state != HOOK_HOLDING) { return }
 
-    this.shootTarget = target
-    this.shootDirection = target.clone()
-    this.shootDirection.sub(this.handModel.position)
+    this.shootDirection = look.clone()
+    //this.shootDirection.multiplyScalar(10)
+    //this.shootDirection.sub(this.handModel.position)
     this.shootDirection.normalize()
-    this.shootDirection.multiplyScalar(0.125)
+    this.shootDirection.multiplyScalar(0.15)
     this.state = HOOK_SHOOTING
 
     gameStateStack.peek().scene.add(this.shootModel)
@@ -132,19 +128,20 @@ class Hook extends Thing {
 
     let gamestate = gameStateStack.peek()
     let player = gamestate.player
-    player.velocity = this.shootTarget.clone()
-    player.velocity.sub(gamestate.player.position)
-    player.velocity.normalize()
-    player.velocity.multiplyScalar(0.125)
+    this.pullingVelocity = this.shootModel.position.clone()
+    this.pullingVelocity.sub(gamestate.player.position)
+    this.pullingVelocity.normalize()
+    this.pullingVelocity.multiplyScalar(0.125)
+    player.velocity = this.pullingVelocity.clone()
     player.beingPulledByHook = true
     this.state = HOOK_REELING
+  }
 
-    // so that the player can grapple when on the floor
-    // and not instantly collide and cancel
-    if (player.onFloor) {
-      player.onFloor = false
-      player.y -= 0.001
-    }
+  reset () {
+    let gameState = gameStateStack.peek()
+    gameState.player.beingPulledByHook = false
+    gameState.scene.remove(this.shootModel)
+    this.state = HOOK_HOLDING
   }
 }
 
