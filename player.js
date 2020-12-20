@@ -246,12 +246,12 @@ class Player extends Thing {
       || map.isSolidCoord(this.position.x - width, this.position.y + this.velocity.y + headroom, this.position.z + width)
       || map.isSolidCoord(this.position.x - width, this.position.y + this.velocity.y + headroom, this.position.z - width)) {
         this.position.y = Math.floor(this.position.y + this.velocity.y + headroom) - headroom
-        this.velocity.y = -0.05
+        this.velocity.y = -0.01
       }
     }
 
     for (let x=-1*width; x<=1*width; x+=0.5*width) {
-      for (let y=0; y<this.height-headroom; y+=0.1) {
+      for (let y=-0.9*this.height; y<=0; y+=0.1*this.height) {
         for (let z=-1*width; z<=1*width; z+=0.5*width) {
           if (map.isSolidCoord(this.position.x + x + this.velocity.x, this.position.y + y, this.position.z + z)) {
             this.velocity.x = 0
