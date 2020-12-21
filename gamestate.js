@@ -92,7 +92,7 @@ class GameMap {
       for (let y = 0; y < height; y++) {
         this.map.arrayData[x][y] = []
         for (let z = 0; z < width; z++) {
-          this.map.arrayData[x][y][z] = Math.floor(Math.random() + 0.5)
+          this.map.arrayData[x][y][z] = 1//Math.floor(Math.random() + 0.5)
         }
       }
     }
@@ -325,7 +325,7 @@ class GameState {
     sunlight.target = target
     */
     this.scene.add(sunlight)
-    this.scene.add(new THREE.DirectionalLightHelper(sunlight, 5))
+    //this.scene.add(new THREE.DirectionalLightHelper(sunlight, 5))
 
 
     this.things = []
