@@ -58,13 +58,26 @@ class Hook extends Thing {
         }
 
         this.state = HOOK_LATCHED
+        this.maxDistance = gameState.player.position.distanceTo(this.shootModel.position)
+        console.log(this.maxDistance)
         // this.reelIn()
       }
 
       // if distance is greater than max distance, just give up
-      if (gameState.player.position.distanceTo(this.shootModel.position) > 8) {
+      if (gameState.player.position.distanceTo(this.shootModel.position) > 5) {
         this.reset()
       }
+    }
+
+    if (this.state == HOOK_LATCHED) {
+        if (this.maxDistance < gameState.player.position.distanceTo(this.shootModel.position)) {
+          console.log('STOP')
+          const stopVelocity = this.shootModel.position.clone()
+          stopVelocity.sub(gameState.player.position)
+          stopVelocity.normalize()
+          stopVelocity.multiplyScalar(0.009)
+          gameState.player.velocity.add(stopVelocity)
+        }
     }
 
     if (this.state == HOOK_REELING) {
