@@ -60,31 +60,24 @@ class GameMap {
       this.createRandom(20,20)
     }
 
-    if (DebugModes.editingLevel) {
-      document.addEventListener("keydown", (event) => {
-        // press enter to save the current level
-        if (event.keyCode == 13) {
-          this.saveLevel("level.json", this.map)
-        }
-      })
-    }
+    document.addEventListener("keydown", (event) => {
+      // press enter to save the current level
+      if (event.keyCode == 13) {
+        this.saveLevel("level.json", this.map)
+      }
+    })
 
     /* A list of things placed by calling placeThings. */
     this.things = []
   }
 
   saveLevel (filename, data) {
-    var element = document.createElement('a')
-    element.setAttribute(
-      'href',
-      `data:text/plain;charset=utf-8,${encodeURIComponent(JSON.stringify(data))}`)
+    let element = document.createElement('a')
+    element.setAttribute('href', `data:text/plain;charset=utf-8,${encodeURIComponent(JSON.stringify(data))}`)
     element.setAttribute('download', filename)
-
     element.style.display = 'none'
     document.body.appendChild(element)
-
     element.click()
-
     document.body.removeChild(element)
   }
 
