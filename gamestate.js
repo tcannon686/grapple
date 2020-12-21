@@ -32,8 +32,11 @@ class GameMap {
     this.name = name
 
     const textureLoader = new THREE.TextureLoader()
-    let material = new THREE.MeshBasicMaterial({map: textureLoader.load("textures/wall1.png")})
-    this.mesh = new THREE.Mesh(new THREE.BoxGeometry(1,1,1), material)
+    let material = new THREE.MeshBasicMaterial({
+      map: textureLoader.load("textures/wall1.png"),
+      //side: THREE.DoubleSide
+    })
+    this.mesh = new THREE.Mesh(new THREE.BufferGeometry(), material)
 
     // check if a map with this name already exists
     // load it if there is, otherwise create a new map
@@ -88,21 +91,106 @@ class GameMap {
   }
 
   updateMesh () {
-    this.geometry = new THREE.Geometry()
+    let positions = []
+    let uvs = []
+    const addVert = (x,y,z, u,v) => {
+      positions.push(x)
+      positions.push(y)
+      positions.push(z)
+      uvs.push(u)
+      uvs.push(v)
+    }
 
     let width = this.map.width
     let height = this.map.height
     for (let x = 0; x < width; x++) {
       for (let y = 0; y < height; y++) {
         for (let z = 0; z < width; z++) {
-          if (this.map.arrayData[x][y][z] === 1) {
-            this.geometry.merge(new THREE.BoxGeometry(1,1,1).translate(x,y,z))
+          // if a block exists
+          if (this.getCoord(x,y,z)) {
+            let x0 = x
+            let y0 = y
+            let z0 = z
+            let x1 = x+1
+            let y1 = y+1
+            let z1 = z+1
+
+            // add each face individually
+
+            // + x
+            if (!this.getCoord(x+1,y,z)) {
+              addVert(x1,y0,z0, 0,0)
+              addVert(x1,y1,z0, 1,0)
+              addVert(x1,y0,z1, 0,1)
+
+              addVert(x1,y1,z0, 1,0)
+              addVert(x1,y1,z1, 1,1)
+              addVert(x1,y0,z1, 0,1)
+            }
+
+            // - x
+            if (!this.getCoord(x-1,y,z)) {
+              addVert(x0,y1,z0, 1,0)
+              addVert(x0,y0,z0, 0,0)
+              addVert(x0,y0,z1, 0,1)
+
+              addVert(x0,y1,z1, 1,1)
+              addVert(x0,y1,z0, 1,0)
+              addVert(x0,y0,z1, 0,1)
+            }
+
+            // + z
+            if (!this.getCoord(x,y,z+1)) {
+              addVert(x0,y0,z1, 0,0)
+              addVert(x1,y0,z1, 1,0)
+              addVert(x0,y1,z1, 0,1)
+
+              addVert(x1,y0,z1, 1,0)
+              addVert(x1,y1,z1, 1,1)
+              addVert(x0,y1,z1, 0,1)
+            }
+
+            // - z
+            if (!this.getCoord(x,y,z-1)) {
+              addVert(x1,y0,z0, 1,0)
+              addVert(x0,y0,z0, 0,0)
+              addVert(x0,y1,z0, 0,1)
+
+              addVert(x1,y1,z0, 1,1)
+              addVert(x1,y0,z0, 1,0)
+              addVert(x0,y1,z0, 0,1)
+            }
+
+            // + y
+            if (!this.getCoord(x,y+1,z)) {
+              addVert(x1,y1,z0, 1,0)
+              addVert(x0,y1,z0, 0,0)
+              addVert(x0,y1,z1, 0,1)
+
+              addVert(x1,y1,z1, 1,1)
+              addVert(x1,y1,z0, 1,0)
+              addVert(x0,y1,z1, 0,1)
+            }
+
+            // - y
+            if (!this.getCoord(x,y-1,z)) {
+              addVert(x0,y0,z0, 0,0)
+              addVert(x1,y0,z0, 1,0)
+              addVert(x0,y0,z1, 0,1)
+
+              addVert(x1,y0,z0, 1,0)
+              addVert(x1,y0,z1, 1,1)
+              addVert(x0,y0,z1, 0,1)
+            }
           }
         }
       }
     }
 
-    this.geometry.translate(+0.5,+0.5,+0.5)
+    print(positions)
+    this.geometry = new THREE.BufferGeometry()
+    this.geometry.setAttribute("position", new THREE.BufferAttribute(new Float32Array(positions), 3))
+    this.geometry.setAttribute("uv", new THREE.BufferAttribute(new Float32Array(uvs), 2))
     this.mesh.geometry = this.geometry
   }
 
