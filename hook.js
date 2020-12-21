@@ -58,7 +58,7 @@ class Hook extends Thing {
         }
 
         this.state = HOOK_LATCHED
-        this.reelIn()
+        // this.reelIn()
       }
 
       // if distance is greater than max distance, just give up
