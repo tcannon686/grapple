@@ -187,7 +187,6 @@ class GameMap {
       }
     }
 
-    print(positions)
     this.geometry = new THREE.BufferGeometry()
     this.geometry.setAttribute("position", new THREE.BufferAttribute(new Float32Array(positions), 3))
     this.geometry.setAttribute("uv", new THREE.BufferAttribute(new Float32Array(uvs), 2))
