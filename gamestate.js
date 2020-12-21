@@ -1,5 +1,9 @@
 'use strict';
 
+const GAMEMAP_AIR = 0
+const GAMEMAP_WALL = 1
+const GAMEMAP_ENEMY = 2
+
 class GameStateStack {
   constructor () {
     this.gameStateStack = []

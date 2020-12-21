@@ -115,7 +115,7 @@ class Player extends Character {
           let hitPosition = map.raycast(this.position, this.look)
 
           if (map.get(hitPosition) !== undefined) {
-            map.set(hitPosition, 0)
+            map.set(hitPosition, GAMEMAP_AIR)
             map.updateMesh()
           }
         }
@@ -126,7 +126,7 @@ class Player extends Character {
           hitPosition = hitPosition.addScaledVector(this.look, -0.1)
 
           if (map.get(hitPosition) !== undefined) {
-            map.set(hitPosition, 1)
+            map.set(hitPosition, GAMEMAP_WALL)
             map.updateMesh()
           }
         }
