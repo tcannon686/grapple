@@ -183,7 +183,16 @@ class Player extends Character {
         }
       } else {
         //this.hook.reelIn()
-        this.hook.shoot(this.look)
+        if(e.buttons == 1) {
+          if(this.hook.state == 0) {
+            this.hook.shoot(this.look)
+          } else if (this.hook.state == 2) {
+            this.hook.reelIn()
+          }
+        }
+        if(e.buttons == 2) {
+          this.hook.reset()
+        }
       }
     }
 
