@@ -131,25 +131,53 @@ class Player extends Character {
       let map = gameState.map
 
       if (DebugModes.editingLevel) {
+        /* The action to perform. */
+        let action
+
         // destroy a block
         if (e.buttons == 1) {
-          let hitPosition = map.raycast(this.position, this.look)
+          action = () => {
+            let hitPosition = map.raycast(this.position, this.look)
 
-          if (map.get(hitPosition) !== undefined) {
-            map.set(hitPosition, GAMEMAP_AIR)
-            map.updateMesh()
+            if (map.get(hitPosition) !== undefined) {
+              map.set(hitPosition, GAMEMAP_AIR)
+              map.updateMesh()
+            }
           }
         }
 
         // place a block
         if (e.buttons == 2) {
-          let hitPosition = map.raycast(this.position, this.look)
-          hitPosition = hitPosition.addScaledVector(this.look, -0.1)
+          action = () => {
+            let hitPosition = map.raycast(this.position, this.look)
+            hitPosition = hitPosition.addScaledVector(this.look, -0.1)
 
-          if (map.get(hitPosition) !== undefined) {
-            map.set(hitPosition, GAMEMAP_WALL)
-            map.updateMesh()
+            if (map.get(hitPosition) !== undefined) {
+              map.set(hitPosition, GAMEMAP_WALL)
+              map.updateMesh()
+            }
           }
+        }
+
+        /* Keep doing the action until the player mouses up. */
+        if (action) {
+          /*
+           * Note we add the event listener here to create a closure with
+           * isMouseDown, that way we are covered even if the user double
+           * clicks.
+           */
+          let isMouseDown = true
+          const onMouseUp = () => { isMouseDown = false }
+          document.addEventListener('mouseup', onMouseUp)
+          const loop = () => {
+            if(isMouseDown) {
+              action()
+              setTimeout(loop, 1000 / 8)
+            } else {
+              document.removeEventListener('mouseup', onMouseUp)
+            }
+          }
+          loop()
         }
       } else {
         //this.hook.reelIn()
