@@ -15,11 +15,13 @@ class Hook extends Thing {
   onEnterScene (gameState) {
     this.handModel = createCube([1,1,1],0x3366bb,false)
     this.handModel.scale.set(0.15,0.15,0.25)
+    // console.log("before", this.handModel.position)
     this.handModel.geometry.translate(2, -1.5, 3)
     gameState.scene.add(this.handModel)
 
     this.shootModel = createCube([1,1,1],0x4488ff,true)
     this.shootModel.scale.set(0.15,0.15,0.15)
+
 
     this.crosshair = createCube([1,1,1],0xffffff, false)
     this.crosshair.scale.set(0.01,0.01,0.01)
@@ -40,7 +42,7 @@ class Hook extends Thing {
 
     if (this.state == HOOK_SHOOTING) {
       // move in the direction being shot
-      this.shootModel.position.add(this.shootDirection)
+      this.shootModel.position.addScaledVector(this.shootDirection, 0.15)
 
       if (gameState.map.isSolid(this.shootModel.position)) {
         // move to the surface of the block
@@ -108,19 +110,31 @@ class Hook extends Thing {
     if (this.state != HOOK_HOLDING) { return }
 
     this.shootDirection = look.clone()
+    console.log(this.shootDirection)
     //this.shootDirection.multiplyScalar(10)
     //this.shootDirection.sub(this.handModel.position)
+    // this.shootDirection.add(new THREE.Vector3(-1,0,0))
     this.shootDirection.normalize()
-    this.shootDirection.multiplyScalar(0.15)
+    // this.shootDirection.multiplyScalar(0.15)
     this.state = HOOK_SHOOTING
 
     gameStateStack.peek().scene.add(this.shootModel)
-    this.shootModel.position.x = this.handModel.position.x
-    this.shootModel.position.y = this.handModel.position.y
-    this.shootModel.position.z = this.handModel.position.z
-    this.shootModel.rotation.x = this.handModel.rotation.x
-    this.shootModel.rotation.y = this.handModel.rotation.y
-    this.shootModel.rotation.z = this.handModel.rotation.z
+    
+    const right = new THREE.Vector3()
+    const forward = new THREE.Vector3()
+    const up = new THREE.Vector3()
+
+    gameStateStack.peek().camera.matrix.extractBasis(right, up, forward)
+    console.log(right)
+
+
+    this.shootModel.position.copy(this.handModel.position)
+    this.shootModel.position.addScaledVector(right, .5)
+    this.shootModel.position.addScaledVector(up, -0.3)
+
+    this.shootDirection.addScaledRector(up, 1)
+
+    this.shootModel.rotation.copy(this.handModel.rotation)
   }
 
   reelIn () {
