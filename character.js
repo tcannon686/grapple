@@ -8,7 +8,6 @@ class Character extends Thing {
     this.velocity = new THREE.Vector3(0, 0, 0)
     this.look = new THREE.Vector3(0,0,0)
 
-    this.speed = 0.005
     this.height = 0.28
     this.width = 0.09
     this.jumpSpeed = 0.085

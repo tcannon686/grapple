@@ -4,6 +4,7 @@ class Player extends Character {
     this.camera = new THREE.PerspectiveCamera(90, canvas.width / canvas.height, 0.001, 1000)
 
     this.beingPulledByHook = false
+    this.speed = 0.005
 
     // create grappling hook and add it to the gamestate
     this.hook = new Hook()
@@ -85,6 +86,19 @@ class Player extends Character {
       // toggle editing level by pressing E
       if (e.keyCode == 69) {
         DebugModes.editingLevel = !DebugModes.editingLevel
+      }
+      // add an enemy by pressing 1
+      else if (e.key == '1') {
+        let hitPosition = gameState.map.raycast(this.position, this.look)
+        hitPosition = hitPosition.addScaledVector(this.look, -0.1)
+
+        if (gameState.map.get(hitPosition) !== undefined) {
+          /* TODO store in the map. */
+          gameState.add(new Enemy(
+            Math.floor(hitPosition.x) + 0.5,
+            Math.floor(hitPosition.y) + 0.5,
+            Math.floor(hitPosition.z) + 0.5))
+        }
       }
     }
 
