@@ -88,17 +88,16 @@ class Player extends Character {
       if (e.keyCode == 69) {
         DebugModes.editingLevel = !DebugModes.editingLevel
       }
-      // add an enemy by pressing 1
-      else if (e.key == '1') {
-        let hitPosition = gameState.map.raycast(this.position, this.look)
-        hitPosition = hitPosition.addScaledVector(this.look, -0.1)
 
-        if (gameState.map.get(hitPosition) !== undefined) {
-          /* TODO store in the map. */
-          gameState.add(new Enemy(
-            Math.floor(hitPosition.x) + 0.5,
-            Math.floor(hitPosition.y) + 0.5,
-            Math.floor(hitPosition.z) + 0.5))
+      if(DebugModes.editingLevel) {
+        if (KEY_TO_THING[e.keyCode]) {
+          let hitPosition = gameState.map.raycast(this.position, this.look)
+          hitPosition = hitPosition.addScaledVector(this.look, -0.1)
+
+          if (gameState.map.get(hitPosition) !== undefined) {
+            gameState.map.set(hitPosition, KEY_TO_THING[e.keyCode])
+            gameState.map.placeThings(gameState)
+          }
         }
       }
     }
@@ -116,7 +115,7 @@ class Player extends Character {
           let hitPosition = map.raycast(this.position, this.look)
 
           if (map.get(hitPosition) !== undefined) {
-            map.set(hitPosition, 0)
+            map.set(hitPosition, GAMEMAP_AIR)
             map.updateMesh()
           }
         }
@@ -127,7 +126,7 @@ class Player extends Character {
           hitPosition = hitPosition.addScaledVector(this.look, -0.1)
 
           if (map.get(hitPosition) !== undefined) {
-            map.set(hitPosition, 1)
+            map.set(hitPosition, GAMEMAP_WALL)
             map.updateMesh()
           }
         }

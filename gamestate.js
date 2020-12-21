@@ -1,5 +1,18 @@
 'use strict';
 
+const GAMEMAP_AIR = 0
+const GAMEMAP_WALL = 1
+const GAMEMAP_ENEMY = 2
+
+const GAMEMAP_MAP_THINGS = {
+  [GAMEMAP_ENEMY]: (x,y,z) => new Enemy(x, y, z)
+}
+
+/* Press 1 to add enemy. */
+const KEY_TO_THING = {
+  49: GAMEMAP_ENEMY
+}
+
 class GameStateStack {
   constructor () {
     this.gameStateStack = []
@@ -55,6 +68,9 @@ class GameMap {
         }
       })
     }
+
+    /* A list of things placed by calling placeThings. */
+    this.things = []
   }
 
   saveLevel (filename, data) {
@@ -106,7 +122,7 @@ class GameMap {
       for (let y = 0; y < height; y++) {
         for (let z = 0; z < width; z++) {
           // if a block exists
-          if (this.getCoord(x,y,z)) {
+          if (this.getCoord(x,y,z) === GAMEMAP_WALL) {
             let x0 = x
             let y0 = y
             let z0 = z
@@ -117,7 +133,7 @@ class GameMap {
             // add each face individually
 
             // + x
-            if (!this.getCoord(x+1,y,z)) {
+            if (this.getCoord(x+1,y,z) !== GAMEMAP_WALL) {
               addVert(x1,y0,z0, 0,0)
               addVert(x1,y1,z0, 1,0)
               addVert(x1,y0,z1, 0,1)
@@ -128,7 +144,7 @@ class GameMap {
             }
 
             // - x
-            if (!this.getCoord(x-1,y,z)) {
+            if (this.getCoord(x-1,y,z) !== GAMEMAP_WALL) {
               addVert(x0,y1,z0, 1,0)
               addVert(x0,y0,z0, 0,0)
               addVert(x0,y0,z1, 0,1)
@@ -139,7 +155,7 @@ class GameMap {
             }
 
             // + z
-            if (!this.getCoord(x,y,z+1)) {
+            if (this.getCoord(x,y,z+1) !== GAMEMAP_WALL) {
               addVert(x0,y0,z1, 0,0)
               addVert(x1,y0,z1, 1,0)
               addVert(x0,y1,z1, 0,1)
@@ -150,7 +166,7 @@ class GameMap {
             }
 
             // - z
-            if (!this.getCoord(x,y,z-1)) {
+            if (this.getCoord(x,y,z-1) !== GAMEMAP_WALL) {
               addVert(x1,y0,z0, 1,0)
               addVert(x0,y0,z0, 0,0)
               addVert(x0,y1,z0, 0,1)
@@ -161,7 +177,7 @@ class GameMap {
             }
 
             // + y
-            if (!this.getCoord(x,y+1,z)) {
+            if (this.getCoord(x,y+1,z) !== GAMEMAP_WALL) {
               addVert(x1,y1,z0, 1,0)
               addVert(x0,y1,z0, 0,0)
               addVert(x0,y1,z1, 0,1)
@@ -172,7 +188,7 @@ class GameMap {
             }
 
             // - y
-            if (!this.getCoord(x,y-1,z)) {
+            if (this.getCoord(x,y-1,z) !== GAMEMAP_WALL) {
               addVert(x0,y0,z0, 0,0)
               addVert(x1,y0,z0, 1,0)
               addVert(x0,y0,z1, 0,1)
@@ -191,6 +207,36 @@ class GameMap {
     this.geometry.setAttribute("uv", new THREE.BufferAttribute(new Float32Array(uvs), 2))
     this.geometry.computeVertexNormals()
     this.mesh.geometry = this.geometry
+  }
+
+  /* Places the things on the map. */
+  placeThings (gameState) {
+    this.clearThings(gameState)
+
+    const width = this.map.width
+    const height = this.map.height
+
+    for (let x = 0; x < width; x++) {
+      for (let y = 0; y < height; y++) {
+        for (let z = 0; z < width; z++) {
+          const factory = GAMEMAP_MAP_THINGS[this.getCoord(x, y, z)]
+          if(factory) {
+            const thing = factory(x + 0.5, y + 0.5, z + 0.5)
+            gameState.add(thing)
+            this.things.push(thing)
+          }
+        }
+      }
+    }
+  }
+
+  /* Remove the things placed using placeThings from the map. */
+  clearThings (gameState) {
+    this.things.forEach((thing) => {
+      /* Force remove of the thing. */
+      thing.update = () => false
+    })
+    this.things.splice(0)
   }
 
   raycast (from, direction) {
@@ -239,7 +285,7 @@ class GameMap {
   }
 
   isSolidCoord (x,y,z) {
-    let get = this.getCoord(x,y,z)
+    let get = this.getCoord(x,y,z) === GAMEMAP_WALL
     return get || y <= 0
   }
 
@@ -312,7 +358,8 @@ class GameState {
   update () {
     for (let i = 0; i < this.things.length; i++) {
       if (this.things[i].update && !this.things[i].update(this)) {
-        this.things[i].splice(i--, 1)
+        this.things[i].onExitScene(this)
+        this.things.splice(i--, 1)
       }
     }
   }
