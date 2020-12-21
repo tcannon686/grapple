@@ -346,6 +346,7 @@ class GameState {
     //this.scene.add(new THREE.DirectionalLightHelper(sunlight, 5))
 
 
+    this.collisionPruner = new CollisionPruner()
     this.things = []
 
     this.gravity = new THREE.Vector3(0, -0.005, 0)
@@ -366,10 +367,59 @@ class GameState {
     this.add(this.player.hook)
   }
 
+  handleCollisions () {
+    this.collisionPruner.update()
+    /* Handle collisions. */
+    for (let list of this.collisionPruner.getOverlappingObjects()) {
+      for(let o1 of list) {
+        for(let o2 of list) {
+          if(o1 == o2) {
+            continue
+          }
+
+          let dist = o1.position.distanceToSquared(o2.position)
+          const r = 0.5
+          if(dist <= r ** 2) {
+            dist = Math.sqrt(dist)
+
+            /* Collision occured. */
+            if (o1.onCollision) {
+              o1.onCollision(this, o2)
+            }
+            if (o2.onCollision) {
+              o2.onCollision(this, o1)
+            }
+            
+            const overlap = new THREE.Vector3()
+            overlap.copy(o1.position)
+            overlap.sub(o2.position)
+
+            const cancelVelocity = new THREE.Vector3()
+            
+            overlap.multiplyScalar((r - dist) / 2)
+
+            o1.position.add(overlap)
+
+            cancelVelocity.copy(o1.velocity)
+            cancelVelocity.projectOnVector(overlap)
+            o1.velocity.sub(cancelVelocity)
+
+            cancelVelocity.copy(o2.velocity)
+            cancelVelocity.projectOnVector(overlap)
+            o2.position.sub(overlap)
+            o2.velocity.sub(cancelVelocity)
+          }
+        }
+      }
+    }
+  }
+
   update () {
+    this.handleCollisions()
     for (let i = 0; i < this.things.length; i++) {
       if (this.things[i].update && !this.things[i].update(this)) {
         this.things[i].onExitScene(this)
+        this.collisionPruner.remove(this.things[i])
         this.things.splice(i--, 1)
       }
     }
@@ -381,6 +431,7 @@ class GameState {
 
   add (thing) {
     this.things.push(thing)
+    this.collisionPruner.add(thing)
     thing.onEnterScene(this)
   }
 }
