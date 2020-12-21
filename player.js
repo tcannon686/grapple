@@ -108,6 +108,8 @@ class Player extends Character {
       // toggle editing level by pressing E
       if (e.keyCode == 69) {
         DebugModes.editingLevel = !DebugModes.editingLevel
+        // replace things
+        gameState.map.placeThings(gameState)
       }
 
       if(DebugModes.editingLevel) {
