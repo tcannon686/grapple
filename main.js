@@ -10,6 +10,7 @@ let lastTime
 let hasLockedPointer = false
 let TimeAccumulator = 0
 const TimeStep = 1/60
+const TextureLoader = new THREE.TextureLoader()
 
 const DebugModes = {
   editingLevel: false,

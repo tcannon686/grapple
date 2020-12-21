@@ -31,9 +31,8 @@ class GameMap {
   constructor (name) {
     this.name = name
 
-    const textureLoader = new THREE.TextureLoader()
-    let material = new THREE.MeshBasicMaterial({
-      map: textureLoader.load("textures/wall1.png"),
+    let material = new THREE.MeshPhongMaterial({
+      map: TextureLoader.load("textures/wall.png"),
       //side: THREE.DoubleSide
     })
     this.mesh = new THREE.Mesh(new THREE.BufferGeometry(), material)
@@ -190,6 +189,7 @@ class GameMap {
     this.geometry = new THREE.BufferGeometry()
     this.geometry.setAttribute("position", new THREE.BufferAttribute(new Float32Array(positions), 3))
     this.geometry.setAttribute("uv", new THREE.BufferAttribute(new Float32Array(uvs), 2))
+    this.geometry.computeVertexNormals()
     this.mesh.geometry = this.geometry
   }
 
@@ -273,18 +273,40 @@ class GameState {
     this.map = new GameMap("testmap3")
     this.map.updateMesh()
     this.scene.add(this.map.mesh)
+    //this.scene.add(new THREE.Mesh(new THREE.BoxGeometry(1,1,1), new THREE.MeshPhongMaterial({map: TextureLoader.load("textures/wall1.png")})))
+
+    this.scene.add(new THREE.AmbientLight(0x404040))
+    const sunlight = new THREE.DirectionalLight(0x999999)
+    sunlight.position.set(-1,1,-1)
+    /*
+    let target = new THREE.Object3D()
+    target.position.x = 1
+    target.position.y = -1
+    target.position.z = 1
+    sunlight.target = target
+    */
+    this.scene.add(sunlight)
+    this.scene.add(new THREE.DirectionalLightHelper(sunlight, 5))
+
 
     this.things = []
+
+    this.gravity = new THREE.Vector3(0, -0.005, 0)
+
+    //this.scene.add(new THREE.GridHelper(4, 10))
+    //this.scene.add(new THREE.AxesHelper())
+
+    // add sky
+    const skyMaterial = new THREE.MeshBasicMaterial({
+      map: TextureLoader.load("textures/sunrise.png"),
+      side: THREE.DoubleSide
+    })
+    this.scene.add(new THREE.Mesh(new THREE.SphereBufferGeometry(1000, 24,8), skyMaterial))
 
     /* Add the player. */
     this.player = new Player() 
     this.add(this.player)
     this.add(this.player.hook)
-
-    this.gravity = new THREE.Vector3(0, -0.005, 0)
-
-    this.scene.add(new THREE.GridHelper(4, 10))
-    this.scene.add(new THREE.AxesHelper())
   }
 
   update () {

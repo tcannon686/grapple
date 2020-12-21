@@ -1,10 +1,11 @@
 class Player extends Character {
   constructor () {
     super()
-    this.camera = new THREE.PerspectiveCamera(90, canvas.width / canvas.height, 0.001, 1000)
+    this.camera = new THREE.PerspectiveCamera(90, canvas.width / canvas.height, 0.001, 5000)
 
     this.beingPulledByHook = false
     this.speed = 0.005
+    this.jumpSpeed = 0.08
 
     // create grappling hook and add it to the gamestate
     this.hook = new Hook()

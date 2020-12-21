@@ -13,9 +13,14 @@ class Hook extends Thing {
 
   /* Called when the thing is added to the gamestate's thing list. */
   onEnterScene (gameState) {
-    this.handModel = createCube([1,1,1],0x3366bb,false)
+    const createCube = (sizes, color, depthTestBoolean, material) => {
+      material = material || new THREE.MeshBasicMaterial({color: color, depthTest:depthTestBoolean})
+      const geometry = new THREE.BoxGeometry(sizes[0],sizes[1],sizes[2])
+      return new THREE.Mesh(geometry, material) 
+    }
+
+    this.handModel = createCube([1,1,1],0x3366bb,false, new THREE.MeshPhongMaterial({color: 0x3366bb, depthTest:false}))
     this.handModel.scale.set(0.15,0.15,0.25)
-    // console.log("before", this.handModel.position)
     this.handModel.geometry.translate(2, -1.5, 3)
     gameState.scene.add(this.handModel)
 
@@ -23,7 +28,7 @@ class Hook extends Thing {
     this.shootModel.scale.set(0.15,0.15,0.15)
 
 
-    this.crosshair = createCube([1,1,1],0xffffff, false)
+    this.crosshair = createCube([1,1,1],0xffffff,false)
     this.crosshair.scale.set(0.01,0.01,0.01)
     gameState.scene.add(this.crosshair)
 
@@ -157,11 +162,4 @@ class Hook extends Thing {
     gameState.scene.remove(this.shootModel)
     this.state = HOOK_HOLDING
   }
-}
-
-function createCube(sizes, color, depthTestBoolean) {	
-  const geometry = new THREE.BoxGeometry(sizes[0],sizes[1],sizes[2])
-  const material = new THREE.MeshBasicMaterial({color: color, depthTest:depthTestBoolean})
-  cube = new THREE.Mesh(geometry, material)
-  return cube
 }
