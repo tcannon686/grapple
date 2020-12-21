@@ -59,19 +59,17 @@ class Hook extends Thing {
 
         this.state = HOOK_LATCHED
         this.maxDistance = gameState.player.position.distanceTo(this.shootModel.position)
-        console.log(this.maxDistance)
-        // this.reelIn()
+        this.reelIn()
       }
 
       // if distance is greater than max distance, just give up
-      if (gameState.player.position.distanceTo(this.shootModel.position) > 5) {
+      if (gameState.player.position.distanceTo(this.shootModel.position) > 4.5) {
         this.reset()
       }
     }
 
     if (this.state == HOOK_LATCHED) {
         if (this.maxDistance < gameState.player.position.distanceTo(this.shootModel.position)) {
-          console.log('STOP')
           const stopVelocity = this.shootModel.position.clone()
           stopVelocity.sub(gameState.player.position)
           stopVelocity.normalize()
@@ -81,11 +79,12 @@ class Hook extends Thing {
     }
 
     if (this.state == HOOK_REELING) {
-      let player = gameState.player
+      const pullingVelocity = this.shootModel.position.clone()
+      pullingVelocity.sub(gameState.player.position)
+      pullingVelocity.normalize()
+      pullingVelocity.multiplyScalar(0.125)
 
-      if (!player.velocity.equals(this.pullingVelocity)) {
-        this.reset()
-      }
+      gameState.player.velocity.copy(pullingVelocity)
     }
 
     return true
@@ -128,30 +127,12 @@ class Hook extends Thing {
     if (this.state != HOOK_HOLDING) { return }
 
     this.shootDirection = look.clone()
-    // console.log(this.shootDirection)
-    //this.shootDirection.multiplyScalar(10)
-    // this.shootDirection.sub(this.handModel.position)
-    // this.shootDirection.add(new THREE.Vector3(-1,0,0))
     this.shootDirection.normalize()
-    // this.shootDirection.multiplyScalar(0.15)
     this.state = HOOK_SHOOTING
 
     gameStateStack.peek().scene.add(this.shootModel)
     
-    // const right = new THREE.Vector3()
-    // const forward = new THREE.Vector3()
-    // const up = new THREE.Vector3()
-
-    // gameStateStack.peek().camera.matrix.extractBasis(right, up, forward)
-    // console.log(right)
-
     this.shootModel.position.copy(this.handModel.position)
-
-    // this.shootModel.position.addScaledVector(right, .5)
-    // this.shootModel.position.addScaledVector(up, -0.3)
-    // this.shootDirection.addScaledRector(up, 1)
-
-
     this.shootModel.rotation.copy(this.handModel.rotation)
   }
 

@@ -16,8 +16,12 @@ class Character extends Thing {
     this.wasOnGround = false
   }
 
+  canJump () {
+    return this.onGround
+  }
+
   jump () {
-    if (this.onGround) {
+    if (this.canJump()) {
       this.velocity.y = this.jumpSpeed
     }
   }

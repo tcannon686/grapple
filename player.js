@@ -25,67 +25,68 @@ class Player extends Character {
     this.camera.updateProjectionMatrix()
 
     // basic movement
-    if (!this.beingPulledByHook)
-    {
-      let dirX = 0.0
-      let dirZ = 0.0
-      if (this.isKeyDown.A) {
-        dirX -= 1.0
-      }
-      if (this.isKeyDown.D) {
-        dirX += 1.0
-      }
-      if (this.isKeyDown.S) {
-        dirZ += 1.0
-      }
-      if (this.isKeyDown.W) {
-        dirZ -= 1.0
-      }
+    let dirX = 0.0
+    let dirZ = 0.0
+    if (this.isKeyDown.A) {
+      dirX -= 1.0
+    }
+    if (this.isKeyDown.D) {
+      dirX += 1.0
+    }
+    if (this.isKeyDown.S) {
+      dirZ += 1.0
+    }
+    if (this.isKeyDown.W) {
+      dirZ -= 1.0
+    }
 
-      let speed = this.speed
+    let speed = this.speed
 
-      if (this.isFlying()) {
-        this.velocity.y *= 0.9
-        speed *= 3
+    if (this.isFlying()) {
+      this.velocity.y *= 0.9
+      speed *= 3
 
-        if (this.isKeyDown['SHIFT']) {
-          this.velocity.y -= speed
-        }
-
-        if (this.isKeyDown[' ']) {
-          this.velocity.y += speed
-        }
-      } else {
-        if (this.isKeyDown[' ']) {
-          this.jump()
-        }
+      if (this.isKeyDown['SHIFT']) {
+        this.velocity.y -= speed
       }
 
-      const len = Math.sqrt(dirX * dirX + dirZ * dirZ)
-
-      if (len > 0) {
-        dirX *= speed / len
-        dirZ *= speed / len
-
-        const left = new THREE.Vector3()
-        const forward = new THREE.Vector3()
-        const up = new THREE.Vector3()
-
-        this.camera.matrix.extractBasis(left, up, forward)
-
-        left.y = 0
-        forward.y = 0
-
-        left.normalize()
-        forward.normalize()
-
-        left.multiplyScalar(dirX)
-        forward.multiplyScalar(dirZ)
-
-        this.velocity.add(left)
-        this.velocity.add(forward)
+      if (this.isKeyDown[' ']) {
+        this.velocity.y += speed
       }
     }
+
+    const len = Math.sqrt(dirX * dirX + dirZ * dirZ)
+
+    if (len > 0) {
+      dirX *= speed / len
+      dirZ *= speed / len
+
+      const left = new THREE.Vector3()
+      const forward = new THREE.Vector3()
+      const up = new THREE.Vector3()
+
+      this.camera.matrix.extractBasis(left, up, forward)
+
+      left.y = 0
+      forward.y = 0
+
+      left.normalize()
+      forward.normalize()
+
+      left.multiplyScalar(dirX)
+      forward.multiplyScalar(dirZ)
+
+      this.velocity.add(left)
+      this.velocity.add(forward)
+    }
+
+    /*
+    if (!this.isFlying()) {
+      if (this.isKeyDown[' ']) {
+        this.jump()
+      }
+    }
+    */
 
     super.update(gameState)
     this.camera.position.copy(this.position)
@@ -103,7 +104,21 @@ class Player extends Character {
       this.onMouseMove)
 
     this.onKeyDown = (e) => {
+      const last = this.isKeyDown[e.key.toUpperCase()]
       this.isKeyDown[e.key.toUpperCase()] = true
+
+      if (e.keyCode == 32 && !last) {
+        this.jump()
+        if (this.hook.state == HOOK_REELING) {
+          this.hook.reset()
+        }
+      }
+
+      if ((e.keyCode == 65 || e.keyCode == 68 || e.keyCode == 83 || e.keyCode == 87) && !last) {
+        if (this.hook.state == HOOK_REELING) {
+          this.hook.reset()
+        }
+      }
 
       // toggle editing level by pressing E
       if (e.keyCode == 69) {
@@ -184,10 +199,11 @@ class Player extends Character {
       } else {
         //this.hook.reelIn()
         if(e.buttons == 1) {
-          if(this.hook.state == 0) {
+          if (this.hook.state == HOOK_REELING || this.hook.state == HOOK_HOLDING) {
+            this.hook.reset()
             this.hook.shoot(this.look)
-          } else if (this.hook.state == 2) {
-            this.hook.reelIn()
+          } else if (this.hook.state == HOOK_LATCHED) {
+            //this.hook.reelIn()
           }
         }
         if(e.buttons == 2) {
@@ -199,6 +215,10 @@ class Player extends Character {
     document.addEventListener('keydown', this.onKeyDown)
     document.addEventListener('keyup', this.onKeyUp)
     document.addEventListener('mousedown', this.mouseDown)
+  }
+
+  canJump() {
+    return (this.onGround || this.beingPulledByHook) && !this.isFlying()
   }
 
   onExitScene (gameState) {
