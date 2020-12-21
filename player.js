@@ -12,6 +12,14 @@ class Player extends Character {
     this.isKeyDown = {}
   }
 
+  doGravity () {
+    return !this.beingPulledByHook && !this.isFlying()
+  }
+
+  isFlying () {
+    return DebugModes.editingLevel
+  }
+
   update (gameState) {
     this.camera.aspect = canvas.width / canvas.height
     this.camera.updateProjectionMatrix()
@@ -34,15 +42,30 @@ class Player extends Character {
         dirZ -= 1.0
       }
 
-      if(this.isKeyDown[' ']) {
-        this.jump()
+      let speed = this.speed
+
+      if (this.isFlying()) {
+        this.velocity.y *= 0.9
+        speed *= 3
+
+        if (this.isKeyDown['SHIFT']) {
+          this.velocity.y -= speed
+        }
+
+        if (this.isKeyDown[' ']) {
+          this.velocity.y += speed
+        }
+      } else {
+        if (this.isKeyDown[' ']) {
+          this.jump()
+        }
       }
 
       const len = Math.sqrt(dirX * dirX + dirZ * dirZ)
 
       if (len > 0) {
-        dirX *= this.speed / len
-        dirZ *= this.speed / len
+        dirX *= speed / len
+        dirZ *= speed / len
 
         const left = new THREE.Vector3()
         const forward = new THREE.Vector3()
@@ -63,8 +86,6 @@ class Player extends Character {
         this.velocity.add(forward)
       }
     }
-
-    this.enableGravity = !this.beingPulledByHook
 
     super.update(gameState)
     this.camera.position.copy(this.position)

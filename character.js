@@ -14,8 +14,6 @@ class Character extends Thing {
 
     this.onGround = false
     this.wasOnGround = false
-
-    this.enableGravity = true
   }
 
   jump () {
@@ -24,14 +22,22 @@ class Character extends Thing {
     }
   }
 
+  doGravity () {
+    return !this.beingPulledByHook
+  }
+
+  doFriction () {
+    return !this.beingPulledByHook
+  }
+
   update (gameState) {
     // gravity
-    if (this.enableGravity) {
+    if (this.doGravity()) {
       this.velocity.add(gameState.gravity)
     }
 
     // friction
-    if (this.enableGravity) {
+    if (this.doFriction()) {
       this.velocity.x *= 0.9
       this.velocity.z *= 0.9
     }

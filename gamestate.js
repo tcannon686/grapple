@@ -232,15 +232,15 @@ class GameMap {
     this.things.splice(0)
   }
 
-  raycast (from, direction) {
+  raycast (from, direction, maxDistance) {
     let raypos = from.clone()
+    let distance = 0
+    const step = 0.1
+    maxDistance = maxDistance || 10
 
-    while (true) {
-      if (this.get(raypos) === undefined || this.get(raypos)) {
-        break
-      }
-
-      raypos = raypos.addScaledVector(direction, 0.1)
+    while (distance < maxDistance && !this.get(raypos)) {
+      raypos = raypos.addScaledVector(direction, step)
+      distance += step
     }
 
     return raypos
