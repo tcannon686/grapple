@@ -3,6 +3,7 @@
 const GAMEMAP_AIR = 0
 const GAMEMAP_WALL = 1
 const GAMEMAP_ENEMY = 2
+const GAMEMAP_MESHSIZE = 10
 
 const GAMEMAP_MAP_THINGS = {
   [GAMEMAP_ENEMY]: (x,y,z) => new Enemy(x, y, z)
@@ -41,14 +42,8 @@ class GameStateStack {
 }
 
 class GameMap {
-  constructor (name) {
+  constructor (gameState, name) {
     this.name = name
-
-    let material = new THREE.MeshPhongMaterial({
-      map: TextureLoader.load("textures/wall.png"),
-      //side: THREE.DoubleSide
-    })
-    this.mesh = new THREE.Mesh(new THREE.BufferGeometry(), material)
 
     // check if a map with this name already exists
     // load it if there is, otherwise create a new map
@@ -57,8 +52,19 @@ class GameMap {
       this.map = get
     } else {
       this.map = {}
-      this.createRandom(20,20)
+      this.createRandom(20,40)
     }
+
+    const material = new THREE.MeshPhongMaterial({ map: TextureLoader.load("textures/wall.png") })
+    this.meshList = []
+    this.meshChangedList = []
+    for (let i=0; i<this.map.height/GAMEMAP_MESHSIZE; i++) {
+      this.meshChangedList[i] = true
+      this.meshList[i] = new THREE.Mesh(new THREE.BoxBufferGeometry(), material)
+      gameState.scene.add(this.meshList[i])
+    }
+
+    this.updateMesh()
 
     document.addEventListener("keydown", (event) => {
       // press enter to save the current level
@@ -81,7 +87,6 @@ class GameMap {
     document.body.removeChild(element)
   }
 
-  // fill the map with random blocks
   createRandom (width, height) {
     this.map.arrayData = []
     this.map.width = width
@@ -92,114 +97,119 @@ class GameMap {
       for (let y = 0; y < height; y++) {
         this.map.arrayData[x][y] = []
         for (let z = 0; z < width; z++) {
-          this.map.arrayData[x][y][z] = 1//Math.floor(Math.random() + 0.5)
+          this.map.arrayData[x][y][z] = 1
         }
       }
     }
   }
 
   updateMesh () {
-    let positions = []
-    let uvs = []
-    const addVert = (x,y,z, u,v) => {
-      positions.push(x)
-      positions.push(y)
-      positions.push(z)
-      uvs.push(u)
-      uvs.push(v)
-    }
+    for (let index=0; index<this.map.height/GAMEMAP_MESHSIZE; index++) {
+      if (!this.meshChangedList[index]) { continue }
+      this.meshChangedList[index] = false
 
-    let width = this.map.width
-    let height = this.map.height
-    for (let x = 0; x < width; x++) {
-      for (let y = 0; y < height; y++) {
-        for (let z = 0; z < width; z++) {
-          // if a block exists
-          if (this.getCoord(x,y,z) === GAMEMAP_WALL) {
-            let x0 = x
-            let y0 = y
-            let z0 = z
-            let x1 = x+1
-            let y1 = y+1
-            let z1 = z+1
+      let positions = []
+      let uvs = []
+      const addVert = (x,y,z, u,v) => {
+        positions.push(x)
+        positions.push(y)
+        positions.push(z)
+        uvs.push(u)
+        uvs.push(v)
+      }
 
-            // add each face individually
+      let width = this.map.width
+      let height = Math.min(this.map.height, GAMEMAP_MESHSIZE)
+      for (let x = 0; x < width; x++) {
+        for (let y = index*GAMEMAP_MESHSIZE; y < height + index*GAMEMAP_MESHSIZE; y++) {
+          for (let z = 0; z < width; z++) {
+            // if a block exists
+            if (this.getCoord(x,y,z) === GAMEMAP_WALL) {
+              let x0 = x
+              let y0 = y
+              let z0 = z
+              let x1 = x+1
+              let y1 = y+1
+              let z1 = z+1
 
-            // + x
-            if (this.getCoord(x+1,y,z) !== GAMEMAP_WALL) {
-              addVert(x1,y0,z0, 0,0)
-              addVert(x1,y1,z0, 1,0)
-              addVert(x1,y0,z1, 0,1)
+              // add each face individually
 
-              addVert(x1,y1,z0, 1,0)
-              addVert(x1,y1,z1, 1,1)
-              addVert(x1,y0,z1, 0,1)
-            }
+              // + x
+              if (this.getCoord(x+1,y,z) !== GAMEMAP_WALL) {
+                addVert(x1,y0,z0, 0,0)
+                addVert(x1,y1,z0, 1,0)
+                addVert(x1,y0,z1, 0,1)
 
-            // - x
-            if (this.getCoord(x-1,y,z) !== GAMEMAP_WALL) {
-              addVert(x0,y1,z0, 1,0)
-              addVert(x0,y0,z0, 0,0)
-              addVert(x0,y0,z1, 0,1)
+                addVert(x1,y1,z0, 1,0)
+                addVert(x1,y1,z1, 1,1)
+                addVert(x1,y0,z1, 0,1)
+              }
 
-              addVert(x0,y1,z1, 1,1)
-              addVert(x0,y1,z0, 1,0)
-              addVert(x0,y0,z1, 0,1)
-            }
+              // - x
+              if (this.getCoord(x-1,y,z) !== GAMEMAP_WALL) {
+                addVert(x0,y1,z0, 1,0)
+                addVert(x0,y0,z0, 0,0)
+                addVert(x0,y0,z1, 0,1)
 
-            // + z
-            if (this.getCoord(x,y,z+1) !== GAMEMAP_WALL) {
-              addVert(x0,y0,z1, 0,0)
-              addVert(x1,y0,z1, 1,0)
-              addVert(x0,y1,z1, 0,1)
+                addVert(x0,y1,z1, 1,1)
+                addVert(x0,y1,z0, 1,0)
+                addVert(x0,y0,z1, 0,1)
+              }
 
-              addVert(x1,y0,z1, 1,0)
-              addVert(x1,y1,z1, 1,1)
-              addVert(x0,y1,z1, 0,1)
-            }
+              // + z
+              if (this.getCoord(x,y,z+1) !== GAMEMAP_WALL) {
+                addVert(x0,y0,z1, 0,0)
+                addVert(x1,y0,z1, 1,0)
+                addVert(x0,y1,z1, 0,1)
 
-            // - z
-            if (this.getCoord(x,y,z-1) !== GAMEMAP_WALL) {
-              addVert(x1,y0,z0, 1,0)
-              addVert(x0,y0,z0, 0,0)
-              addVert(x0,y1,z0, 0,1)
+                addVert(x1,y0,z1, 1,0)
+                addVert(x1,y1,z1, 1,1)
+                addVert(x0,y1,z1, 0,1)
+              }
 
-              addVert(x1,y1,z0, 1,1)
-              addVert(x1,y0,z0, 1,0)
-              addVert(x0,y1,z0, 0,1)
-            }
+              // - z
+              if (this.getCoord(x,y,z-1) !== GAMEMAP_WALL) {
+                addVert(x1,y0,z0, 1,0)
+                addVert(x0,y0,z0, 0,0)
+                addVert(x0,y1,z0, 0,1)
 
-            // + y
-            if (this.getCoord(x,y+1,z) !== GAMEMAP_WALL) {
-              addVert(x1,y1,z0, 1,0)
-              addVert(x0,y1,z0, 0,0)
-              addVert(x0,y1,z1, 0,1)
+                addVert(x1,y1,z0, 1,1)
+                addVert(x1,y0,z0, 1,0)
+                addVert(x0,y1,z0, 0,1)
+              }
 
-              addVert(x1,y1,z1, 1,1)
-              addVert(x1,y1,z0, 1,0)
-              addVert(x0,y1,z1, 0,1)
-            }
+              // + y
+              if (this.getCoord(x,y+1,z) !== GAMEMAP_WALL) {
+                addVert(x1,y1,z0, 1,0)
+                addVert(x0,y1,z0, 0,0)
+                addVert(x0,y1,z1, 0,1)
 
-            // - y
-            if (this.getCoord(x,y-1,z) !== GAMEMAP_WALL) {
-              addVert(x0,y0,z0, 0,0)
-              addVert(x1,y0,z0, 1,0)
-              addVert(x0,y0,z1, 0,1)
+                addVert(x1,y1,z1, 1,1)
+                addVert(x1,y1,z0, 1,0)
+                addVert(x0,y1,z1, 0,1)
+              }
 
-              addVert(x1,y0,z0, 1,0)
-              addVert(x1,y0,z1, 1,1)
-              addVert(x0,y0,z1, 0,1)
+              // - y
+              if (this.getCoord(x,y-1,z) !== GAMEMAP_WALL) {
+                addVert(x0,y0,z0, 0,0)
+                addVert(x1,y0,z0, 1,0)
+                addVert(x0,y0,z1, 0,1)
+
+                addVert(x1,y0,z0, 1,0)
+                addVert(x1,y0,z1, 1,1)
+                addVert(x0,y0,z1, 0,1)
+              }
             }
           }
         }
       }
-    }
 
-    this.geometry = new THREE.BufferGeometry()
-    this.geometry.setAttribute("position", new THREE.BufferAttribute(new Float32Array(positions), 3))
-    this.geometry.setAttribute("uv", new THREE.BufferAttribute(new Float32Array(uvs), 2))
-    this.geometry.computeVertexNormals()
-    this.mesh.geometry = this.geometry
+      let geometry = new THREE.BufferGeometry()
+      geometry.setAttribute("position", new THREE.BufferAttribute(new Float32Array(positions), 3))
+      geometry.setAttribute("uv", new THREE.BufferAttribute(new Float32Array(uvs), 2))
+      geometry.computeVertexNormals()
+      this.meshList[index].geometry = geometry
+    }
   }
 
   /* Places the things on the map. */
@@ -270,6 +280,15 @@ class GameMap {
       && this.map.arrayData[vx][vy][vz] !== undefined)
     {
       this.map.arrayData[vx][vy][vz] = value
+
+      const meshIndex = Math.floor(vy/GAMEMAP_MESHSIZE)
+      if (vy%GAMEMAP_MESHSIZE == 0) {
+        this.meshChangedList[Math.max(meshIndex-1, 0)] = true
+      }
+      if (vy%GAMEMAP_MESHSIZE == GAMEMAP_MESHSIZE-1) {
+        this.meshChangedList[Math.min(meshIndex+1, this.meshChangedList.length-1)] = true
+      }
+      this.meshChangedList[meshIndex] = true
     }
   }
 
@@ -309,9 +328,8 @@ class GameState {
     this.scene = new THREE.Scene()
 
     // set up the map
-    this.map = new GameMap("testmap3")
-    this.map.updateMesh()
-    this.scene.add(this.map.mesh)
+    this.map = new GameMap(this, "testmap3")
+    //this.scene.add(this.map.mesh)
     //this.scene.add(new THREE.Mesh(new THREE.BoxGeometry(1,1,1), new THREE.MeshPhongMaterial({map: TextureLoader.load("textures/wall1.png")})))
 
     this.scene.add(new THREE.AmbientLight(0x404040))
