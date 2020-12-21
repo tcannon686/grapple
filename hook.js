@@ -110,9 +110,9 @@ class Hook extends Thing {
     if (this.state != HOOK_HOLDING) { return }
 
     this.shootDirection = look.clone()
-    console.log(this.shootDirection)
+    // console.log(this.shootDirection)
     //this.shootDirection.multiplyScalar(10)
-    //this.shootDirection.sub(this.handModel.position)
+    // this.shootDirection.sub(this.handModel.position)
     // this.shootDirection.add(new THREE.Vector3(-1,0,0))
     this.shootDirection.normalize()
     // this.shootDirection.multiplyScalar(0.15)
@@ -120,19 +120,19 @@ class Hook extends Thing {
 
     gameStateStack.peek().scene.add(this.shootModel)
     
-    const right = new THREE.Vector3()
-    const forward = new THREE.Vector3()
-    const up = new THREE.Vector3()
+    // const right = new THREE.Vector3()
+    // const forward = new THREE.Vector3()
+    // const up = new THREE.Vector3()
 
-    gameStateStack.peek().camera.matrix.extractBasis(right, up, forward)
-    console.log(right)
-
+    // gameStateStack.peek().camera.matrix.extractBasis(right, up, forward)
+    // console.log(right)
 
     this.shootModel.position.copy(this.handModel.position)
-    this.shootModel.position.addScaledVector(right, .5)
-    this.shootModel.position.addScaledVector(up, -0.3)
 
-    this.shootDirection.addScaledRector(up, 1)
+    // this.shootModel.position.addScaledVector(right, .5)
+    // this.shootModel.position.addScaledVector(up, -0.3)
+    // this.shootDirection.addScaledRector(up, 1)
+
 
     this.shootModel.rotation.copy(this.handModel.rotation)
   }
