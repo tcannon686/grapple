@@ -6,6 +6,7 @@ class Player extends Character {
     this.beingPulledByHook = false
     this.speed = 0.005
     this.jumpSpeed = 0.08
+    this.lastVelocity = new THREE.Vector3()
 
     // create grappling hook and add it to the gamestate
     this.hook = new Hook()
@@ -14,6 +15,10 @@ class Player extends Character {
 
   doGravity () {
     return !this.beingPulledByHook && !this.isFlying()
+  }
+
+  doFriction () {
+    return !this.beingPulledByHook && this.onGround
   }
 
   isFlying () {
@@ -76,17 +81,21 @@ class Player extends Character {
       left.multiplyScalar(dirX)
       forward.multiplyScalar(dirZ)
 
+      this.lastVelocity.copy(this.velocity)
       this.velocity.add(left)
       this.velocity.add(forward)
-    }
 
-    /*
-    if (!this.isFlying()) {
-      if (this.isKeyDown[' ']) {
-        this.jump()
+      // clamp the X and Z velocity components
+      // so that the vector length can never increase while in the air
+      const lastLength = Math.sqrt(Math.pow(this.lastVelocity.x, 2) + Math.pow(this.lastVelocity.z, 2))
+      const length = Math.sqrt(Math.pow(this.velocity.x, 2) + Math.pow(this.velocity.z, 2))
+      if (!this.doFriction() && lastLength < length) {
+        const lastVelocityY = this.velocity.y
+        this.velocity.y = 0
+        this.velocity.clampLength(0, lastLength)
+        this.velocity.y = lastVelocityY
       }
     }
-    */
 
     super.update(gameState)
     this.camera.position.copy(this.position)
