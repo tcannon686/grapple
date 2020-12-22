@@ -69,7 +69,7 @@ export class GameMap {
         for (let y = 0; y < this.map.height; y++) {
           this.map.arrayData[x][y] = []
           for (let z = 0; z < this.map.width; z++) {
-            this.map.arrayData[x][y][z] = y == 0 && x < 5 && z < 5 ? 1 : 0
+            this.map.arrayData[x][y][z] = y == 0 && Math.pow(x-this.map.width/2,2) + Math.pow(z-this.map.width/2,2) <= 25 ? 1 : 0
           }
         }
       }
@@ -402,7 +402,7 @@ export class GameState {
     this.scene.add(new THREE.Mesh(new THREE.SphereBufferGeometry(1000, 24,8), skyMaterial))
 
     /* Add the player. */
-    this.player = new Player(2.5,2.5,2.5)
+    this.player = new Player(this.map.map.width/2 + 0.5,2.5,this.map.map.width/2 + 0.5)
     this.add(this.player)
     this.add(this.player.hook)
   }
