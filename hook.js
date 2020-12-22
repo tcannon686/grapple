@@ -6,7 +6,9 @@ export const HOOK_HOLDING = 0
 export const HOOK_SHOOTING = 1
 export const HOOK_LATCHED = 2
 export const HOOK_REELING = 3
-const HOOK_MAX = 5
+const HOOK_MAX = 6
+const HOOK_SPEED = 0.6
+const HOOK_PULLSPEED = 0.2
 
 export class Hook extends Thing {
   constructor (owner) {
@@ -67,7 +69,7 @@ export class Hook extends Thing {
   	this.updateGun(gameState)
 
     if (this.state == HOOK_SHOOTING) {
-      this.shootModel.position.addScaledVector(this.shootDirection, 0.3)
+      this.shootModel.position.addScaledVector(this.shootDirection, HOOK_SPEED)
       if (this.shootModel.position.distanceTo(this.target) < 0.1
       || this.targetDistance <= this.shootModel.position.distanceTo(this.target)) {
         if (gameState.map.isSolid(this.target)) {
@@ -101,7 +103,7 @@ export class Hook extends Thing {
       const pullingVelocity = this.shootModel.position.clone()
       pullingVelocity.sub(gameState.player.position)
       pullingVelocity.normalize()
-      pullingVelocity.multiplyScalar(0.125)
+      pullingVelocity.multiplyScalar(HOOK_PULLSPEED)
 
       gameState.player.velocity.copy(pullingVelocity)
     }

@@ -27,9 +27,12 @@ export default class Player extends Character {
     this.camera = new THREE.PerspectiveCamera(90, canvas.width / canvas.height, 0.001, 5000)
 
     this.beingPulledByHook = false
-    this.speed = 0.005
+    this.speed = 0.009
     this.jumpSpeed = 0.08
     this.lastVelocity = new THREE.Vector3()
+
+    this.height = 0.8
+    this.width = 0.15
 
     // create grappling hook and add it to the gamestate
     this.hook = new Hook()

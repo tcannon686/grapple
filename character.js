@@ -95,6 +95,26 @@ export default class Character extends Thing {
             this.velocity.z = 0
             this.onWall = true
           }
+
+          // also test while incorporating more than one speed at a time
+          if (map.isSolidCoord(this.position.x + x, this.position.y + y + this.velocity.y, this.position.z + z + this.velocity.z)) {
+            this.velocity.z = 0
+            this.velocity.y = 0
+            this.onWall = true
+          }
+
+          if (map.isSolidCoord(this.position.x + x + this.velocity.x, this.position.y + y + this.velocity.y, this.position.z + z)) {
+            this.velocity.x = 0
+            this.velocity.y = 0
+            this.onWall = true
+          }
+
+          if (map.isSolidCoord(this.position.x + x + this.velocity.x, this.position.y + y + this.velocity.y, this.position.z + z + this.velocity.z)) {
+            this.velocity.x = 0
+            this.velocity.y = 0
+            this.velocity.z = 0
+            this.onWall = true
+          }
         }
       }
     }
