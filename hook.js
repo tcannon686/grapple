@@ -10,6 +10,9 @@ const HOOK_MAX = 6
 const HOOK_SPEED = 0.6
 const HOOK_PULLSPEED = 0.2
 
+const HOOK_SWING_SOUND = new Audio("/sounds/swing.mp3")
+const HOOK_STICK_SOUND = new Audio("/sounds/stick.mp3")
+
 export class Hook extends Thing {
   constructor (owner) {
     super()
@@ -74,6 +77,8 @@ export class Hook extends Thing {
       || this.targetDistance <= this.shootModel.position.distanceTo(this.target)) {
         if (gameState.map.isSolid(this.target)) {
           this.state = HOOK_LATCHED
+          HOOK_STICK_SOUND.play()
+          console.log(HOOK_STICK_SOUND)
           this.maxDistance = gameState.player.position.distanceTo(this.shootModel.position)
           this.shootModel.position.copy(this.target)
           this.reelIn()
@@ -163,6 +168,8 @@ export class Hook extends Thing {
     if(this.handModel) {
       this.shootModel.rotation.copy(this.handModel.rotation)
     }
+
+    HOOK_SWING_SOUND.play()
 
     this.shootDirection = this.target.clone().sub(this.shootModel.position)
     this.shootDirection.normalize()
