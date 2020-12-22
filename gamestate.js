@@ -365,43 +365,34 @@ export class GameMap {
 
 export class GameState {
   constructor () {
+    // threejs scene
     this.scene = new THREE.Scene()
 
     // set up the map
     this.map = new GameMap(this, "testmap3")
-    //this.scene.add(this.map.mesh)
-    //this.scene.add(new THREE.Mesh(new THREE.BoxGeometry(1,1,1), new THREE.MeshPhongMaterial({map: TextureLoader.load("textures/wall1.png")})))
 
+    // add lighting
     this.scene.add(new THREE.AmbientLight(0x404040))
     const sunlight = new THREE.DirectionalLight(0x999999)
     sunlight.position.set(-1,1,-1)
-    /*
-    let target = new THREE.Object3D()
-    target.position.x = 1
-    target.position.y = -1
-    target.position.z = 1
-    sunlight.target = target
-    */
     this.scene.add(sunlight)
-    //this.scene.add(new THREE.DirectionalLightHelper(sunlight, 5))
 
-
+    // things list and helper collisionpruner
     this.collisionPruner = new CollisionPruner()
     this.things = []
 
+    // gravity
     this.gravity = new THREE.Vector3(0, -0.005, 0)
-
-    //this.scene.add(new THREE.GridHelper(4, 10))
-    //this.scene.add(new THREE.AxesHelper())
 
     // add sky
     const skyMaterial = new THREE.MeshBasicMaterial({
       map: TextureLoader.load("textures/sunrise.png"),
       side: THREE.DoubleSide
     })
-    this.scene.add(new THREE.Mesh(new THREE.SphereBufferGeometry(1000, 24,8), skyMaterial))
+    this.sky = new THREE.Mesh(new THREE.SphereBufferGeometry(1000, 24,8), skyMaterial)
+    this.scene.add(this.sky)
 
-    /* Add the player. */
+    // add the player and the player's hook
     this.player = new Player(this.map.map.width/2 + 0.5,2.5,this.map.map.width/2 + 0.5)
     this.add(this.player)
     this.add(this.player.hook)
@@ -463,6 +454,8 @@ export class GameState {
         this.things.splice(i--, 1)
       }
     }
+
+    this.sky.position.copy(this.player.camera.position)
   }
 
   render () {
