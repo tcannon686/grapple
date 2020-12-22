@@ -64,11 +64,17 @@ export class GameMap {
 
     const material = new THREE.MeshPhongMaterial({ map: TextureLoader.load("textures/wall.png") })
     this.meshList = []
+    this.meshMap = {}
     this.meshChangedList = []
-    for (let i=0; i<this.map.height/GAMEMAP_MESHSIZE; i++) {
-      this.meshChangedList[i] = true
-      this.meshList[i] = new THREE.Mesh(new THREE.BoxBufferGeometry(), material)
-      gameState.scene.add(this.meshList[i])
+    for (let x=0; x<this.map.width; x+=GAMEMAP_MESHSIZE) {
+      for (let z=0; z<this.map.width; z+=GAMEMAP_MESHSIZE) {
+        for (let y=0; y<this.map.height; y+=GAMEMAP_MESHSIZE) {
+          const meshIndex = this.getMesh(x,y,z)
+          this.addMeshChange(x,y,z)
+          this.meshMap[meshIndex] = new THREE.Mesh(new THREE.BoxBufferGeometry(), material)
+          gameState.scene.add(this.meshMap[meshIndex])
+        }
+      }
     }
 
     this.updateMesh()
@@ -82,6 +88,17 @@ export class GameMap {
 
     /* A list of things placed by calling placeThings. */
     this.things = []
+  }
+
+  getMesh (x,y,z) {
+    return "" + Math.floor(x/GAMEMAP_MESHSIZE) + ", " + Math.floor(y/GAMEMAP_MESHSIZE) + ", " + Math.floor(z/GAMEMAP_MESHSIZE)
+  }
+
+  addMeshChange (x,y,z) {
+    const meshCoords = [Math.floor(x/GAMEMAP_MESHSIZE)*GAMEMAP_MESHSIZE,Math.floor(y/GAMEMAP_MESHSIZE)*GAMEMAP_MESHSIZE,Math.floor(z/GAMEMAP_MESHSIZE)*GAMEMAP_MESHSIZE]
+    if (!this.meshChangedList.includes(meshCoords)) {
+      this.meshChangedList.push(meshCoords)
+    }
   }
 
   saveLevel (filename, data) {
@@ -111,10 +128,7 @@ export class GameMap {
   }
 
   updateMesh () {
-    for (let index=0; index<this.map.height/GAMEMAP_MESHSIZE; index++) {
-      if (!this.meshChangedList[index]) { continue }
-      this.meshChangedList[index] = false
-
+    for (const key in this.meshChangedList) {
       let positions = []
       let uvs = []
       const addVert = (x,y,z, u,v) => {
@@ -125,11 +139,13 @@ export class GameMap {
         uvs.push(v)
       }
 
-      let width = this.map.width
-      let height = Math.min(this.map.height, GAMEMAP_MESHSIZE)
-      for (let x = 0; x < width; x++) {
-        for (let y = index*GAMEMAP_MESHSIZE; y < height + index*GAMEMAP_MESHSIZE; y++) {
-          for (let z = 0; z < width; z++) {
+      const coord = this.meshChangedList[key]
+      const meshCoord = [Math.floor(coord[0]/GAMEMAP_MESHSIZE), Math.floor(coord[1]/GAMEMAP_MESHSIZE), Math.floor(coord[2]/GAMEMAP_MESHSIZE)]
+      const startingCoord = [meshCoord[0]*GAMEMAP_MESHSIZE, meshCoord[1]*GAMEMAP_MESHSIZE, meshCoord[2]*GAMEMAP_MESHSIZE]
+
+      for (let x = startingCoord[0]; x < startingCoord[0] + GAMEMAP_MESHSIZE; x++) {
+        for (let y = startingCoord[1]; y < startingCoord[1] + GAMEMAP_MESHSIZE; y++) {
+          for (let z = startingCoord[2]; z < startingCoord[2] + GAMEMAP_MESHSIZE; z++) {
             // if a block exists
             if (this.getCoord(x,y,z) === GAMEMAP_WALL) {
               let x0 = x
@@ -215,8 +231,10 @@ export class GameMap {
       geometry.setAttribute("position", new THREE.BufferAttribute(new Float32Array(positions), 3))
       geometry.setAttribute("uv", new THREE.BufferAttribute(new Float32Array(uvs), 2))
       geometry.computeVertexNormals()
-      this.meshList[index].geometry = geometry
+      this.meshMap[this.getMesh(coord[0], coord[1], coord[2])].geometry = geometry
     }
+
+    this.meshChangedList = []
   }
 
   /* Places the things on the map. */
@@ -287,15 +305,13 @@ export class GameMap {
       && this.map.arrayData[vx][vy][vz] !== undefined)
     {
       this.map.arrayData[vx][vy][vz] = value
-
-      const meshIndex = Math.floor(vy/GAMEMAP_MESHSIZE)
-      if (vy%GAMEMAP_MESHSIZE == 0) {
-        this.meshChangedList[Math.max(meshIndex-1, 0)] = true
-      }
-      if (vy%GAMEMAP_MESHSIZE == GAMEMAP_MESHSIZE-1) {
-        this.meshChangedList[Math.min(meshIndex+1, this.meshChangedList.length-1)] = true
-      }
-      this.meshChangedList[meshIndex] = true
+      this.addMeshChange(vx,vy,vz)
+      this.addMeshChange(vx-1,vy,vz)
+      this.addMeshChange(vx,vy-1,vz)
+      this.addMeshChange(vx,vy,vz-1)
+      this.addMeshChange(vx+1,vy,vz)
+      this.addMeshChange(vx,vy+1,vz)
+      this.addMeshChange(vx,vy,vz+1)
     }
   }
 

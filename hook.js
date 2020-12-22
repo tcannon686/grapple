@@ -73,6 +73,7 @@ export class Hook extends Thing {
         if (gameState.map.isSolid(this.target)) {
           this.state = HOOK_LATCHED
           this.maxDistance = gameState.player.position.distanceTo(this.shootModel.position)
+          this.shootModel.position.copy(this.target)
           this.reelIn()
         } else {
           this.reset()
