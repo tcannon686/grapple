@@ -6,7 +6,7 @@ export const HOOK_HOLDING = 0
 export const HOOK_SHOOTING = 1
 export const HOOK_LATCHED = 2
 export const HOOK_REELING = 3
-const HOOK_MAX = 4.5
+const HOOK_MAX = 5
 
 export class Hook extends Thing {
   constructor (owner) {

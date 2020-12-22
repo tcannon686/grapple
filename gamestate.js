@@ -59,7 +59,20 @@ export class GameMap {
       this.map = get
     } else {
       this.map = {}
-      this.createRandom(20,40)
+      this.map.arrayData = []
+      this.map.width = 60
+      this.map.height = 20
+
+      //this.createRandom(20,40)
+      for (let x = 0; x < this.map.width; x++) {
+        this.map.arrayData[x] = []
+        for (let y = 0; y < this.map.height; y++) {
+          this.map.arrayData[x][y] = []
+          for (let z = 0; z < this.map.width; z++) {
+            this.map.arrayData[x][y][z] = y == 0 && x < 5 && z < 5 ? 1 : 0
+          }
+        }
+      }
     }
 
     const material = new THREE.MeshPhongMaterial({ map: TextureLoader.load("textures/wall.png") })
@@ -69,7 +82,7 @@ export class GameMap {
     for (let x=0; x<this.map.width; x+=GAMEMAP_MESHSIZE) {
       for (let z=0; z<this.map.width; z+=GAMEMAP_MESHSIZE) {
         for (let y=0; y<this.map.height; y+=GAMEMAP_MESHSIZE) {
-          const meshIndex = this.getMesh(x,y,z)
+          const meshIndex = this.getMeshName(x,y,z)
           this.addMeshChange(x,y,z)
           this.meshMap[meshIndex] = new THREE.Mesh(new THREE.BoxBufferGeometry(), material)
           gameState.scene.add(this.meshMap[meshIndex])
@@ -90,7 +103,7 @@ export class GameMap {
     this.things = []
   }
 
-  getMesh (x,y,z) {
+  getMeshName (x,y,z) {
     return "" + Math.floor(x/GAMEMAP_MESHSIZE) + ", " + Math.floor(y/GAMEMAP_MESHSIZE) + ", " + Math.floor(z/GAMEMAP_MESHSIZE)
   }
 
@@ -98,6 +111,7 @@ export class GameMap {
     const meshCoords = [Math.floor(x/GAMEMAP_MESHSIZE)*GAMEMAP_MESHSIZE,Math.floor(y/GAMEMAP_MESHSIZE)*GAMEMAP_MESHSIZE,Math.floor(z/GAMEMAP_MESHSIZE)*GAMEMAP_MESHSIZE]
     if (!this.meshChangedList.includes(meshCoords)) {
       this.meshChangedList.push(meshCoords)
+      //console.log(meshCoords)
     }
   }
 
@@ -111,11 +125,8 @@ export class GameMap {
     document.body.removeChild(element)
   }
 
+  /*
   createRandom (width, height) {
-    this.map.arrayData = []
-    this.map.width = width
-    this.map.height = height
-
     for (let x = 0; x < width; x++) {
       this.map.arrayData[x] = []
       for (let y = 0; y < height; y++) {
@@ -126,9 +137,19 @@ export class GameMap {
       }
     }
   }
+  */
 
   updateMesh () {
     for (const key in this.meshChangedList) {
+      const coord = this.meshChangedList[key]
+      const meshCoord = [Math.floor(coord[0]/GAMEMAP_MESHSIZE), Math.floor(coord[1]/GAMEMAP_MESHSIZE), Math.floor(coord[2]/GAMEMAP_MESHSIZE)]
+      const startingCoord = [meshCoord[0]*GAMEMAP_MESHSIZE, meshCoord[1]*GAMEMAP_MESHSIZE, meshCoord[2]*GAMEMAP_MESHSIZE]
+      const name = this.getMeshName(coord[0], coord[1], coord[2])
+
+      if (!this.meshMap[name]) {
+        continue;
+      }
+
       let positions = []
       let uvs = []
       const addVert = (x,y,z, u,v) => {
@@ -138,10 +159,6 @@ export class GameMap {
         uvs.push(u)
         uvs.push(v)
       }
-
-      const coord = this.meshChangedList[key]
-      const meshCoord = [Math.floor(coord[0]/GAMEMAP_MESHSIZE), Math.floor(coord[1]/GAMEMAP_MESHSIZE), Math.floor(coord[2]/GAMEMAP_MESHSIZE)]
-      const startingCoord = [meshCoord[0]*GAMEMAP_MESHSIZE, meshCoord[1]*GAMEMAP_MESHSIZE, meshCoord[2]*GAMEMAP_MESHSIZE]
 
       for (let x = startingCoord[0]; x < startingCoord[0] + GAMEMAP_MESHSIZE; x++) {
         for (let y = startingCoord[1]; y < startingCoord[1] + GAMEMAP_MESHSIZE; y++) {
@@ -231,7 +248,7 @@ export class GameMap {
       geometry.setAttribute("position", new THREE.BufferAttribute(new Float32Array(positions), 3))
       geometry.setAttribute("uv", new THREE.BufferAttribute(new Float32Array(uvs), 2))
       geometry.computeVertexNormals()
-      this.meshMap[this.getMesh(coord[0], coord[1], coord[2])].geometry = geometry
+      this.meshMap[name].geometry = geometry
     }
 
     this.meshChangedList = []
