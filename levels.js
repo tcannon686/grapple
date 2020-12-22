@@ -1,2 +1,2 @@
-const Levels = {
+export const Levels = {
 }

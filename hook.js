@@ -1,10 +1,14 @@
-const HOOK_HOLDING = 0
-const HOOK_SHOOTING = 1
-const HOOK_LATCHED = 2
-const HOOK_REELING = 3
+import Thing from './thing.js'
+import * as THREE from './three.module.js'
+import { gameStateStack } from './main.js'
+
+export const HOOK_HOLDING = 0
+export const HOOK_SHOOTING = 1
+export const HOOK_LATCHED = 2
+export const HOOK_REELING = 3
 const HOOK_MAX = 4.5
 
-class Hook extends Thing {
+export class Hook extends Thing {
   constructor (owner) {
     super()
     this.state = HOOK_HOLDING

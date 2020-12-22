@@ -1,20 +1,27 @@
 'use strict';
 
-const GAMEMAP_AIR = 0
-const GAMEMAP_WALL = 1
-const GAMEMAP_ENEMY = 2
-const GAMEMAP_MESHSIZE = 10
+import * as THREE from './three.module.js'
+import { Levels } from './levels.js'
+import { TextureLoader, renderer } from './main.js'
+import CollisionPruner from './collisionpruner.js'
+import Player from './player.js'
+import Enemy from './enemy.js'
 
-const GAMEMAP_MAP_THINGS = {
+export const GAMEMAP_AIR = 0
+export const GAMEMAP_WALL = 1
+export const GAMEMAP_ENEMY = 2
+export const GAMEMAP_MESHSIZE = 10
+
+export const GAMEMAP_MAP_THINGS = {
   [GAMEMAP_ENEMY]: (x,y,z) => new Enemy(x, y, z)
 }
 
 /* Press 1 to add enemy. */
-const KEY_TO_THING = {
+export const KEY_TO_THING = {
   49: GAMEMAP_ENEMY
 }
 
-class GameStateStack {
+export class GameStateStack {
   constructor () {
     this.gameStateStack = []
   }
@@ -41,7 +48,7 @@ class GameStateStack {
   }
 }
 
-class GameMap {
+export class GameMap {
   constructor (gameState, name) {
     this.name = name
 
@@ -323,7 +330,7 @@ class GameMap {
   }
 }
 
-class GameState {
+export class GameState {
   constructor () {
     this.scene = new THREE.Scene()
 
