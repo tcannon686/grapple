@@ -1,6 +1,7 @@
 import Thing from './thing.js'
 import * as THREE from './three.module.js'
 import { gameStateStack, GltfLoader } from './main.js'
+import { PlaySound } from './main.js'
 
 export const HOOK_HOLDING = 0
 export const HOOK_SHOOTING = 1
@@ -77,8 +78,7 @@ export class Hook extends Thing {
       || this.targetDistance <= this.shootModel.position.distanceTo(this.target)) {
         if (gameState.map.isSolid(this.target)) {
           this.state = HOOK_LATCHED
-          HOOK_STICK_SOUND.play()
-          console.log(HOOK_STICK_SOUND)
+          PlaySound(HOOK_STICK_SOUND)
           this.maxDistance = gameState.player.position.distanceTo(this.shootModel.position)
           this.shootModel.position.copy(this.target)
           this.reelIn()
@@ -169,7 +169,7 @@ export class Hook extends Thing {
       this.shootModel.rotation.copy(this.handModel.rotation)
     }
 
-    HOOK_SWING_SOUND.play()
+    PlaySound(HOOK_SWING_SOUND)
 
     this.shootDirection = this.target.clone().sub(this.shootModel.position)
     this.shootDirection.normalize()

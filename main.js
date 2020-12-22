@@ -47,6 +47,12 @@ function Render () {
   }
 }
 
+export function PlaySound (sound) {
+  sound.pause()
+  sound.currentTime = 0
+  sound.play()
+}
+
 function Loop () {
   FPSCounter.begin()
 
