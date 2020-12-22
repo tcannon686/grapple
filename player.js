@@ -18,7 +18,7 @@ class Player extends Character {
   }
 
   doFriction () {
-    return !this.beingPulledByHook && this.onGround
+    return (!this.beingPulledByHook && this.onGround) || this.isFlying()
   }
 
   isFlying () {
@@ -89,7 +89,7 @@ class Player extends Character {
       // so that the vector length can never increase while in the air
       const lastLength = Math.sqrt(Math.pow(this.lastVelocity.x, 2) + Math.pow(this.lastVelocity.z, 2))
       const length = Math.sqrt(Math.pow(this.velocity.x, 2) + Math.pow(this.velocity.z, 2))
-      if (!this.doFriction() && lastLength < length) {
+      if (!this.doFriction() && !this.isFlying() && lastLength < length) {
         const lastVelocityY = this.velocity.y
         this.velocity.y = 0
         this.velocity.clampLength(0, lastLength)
