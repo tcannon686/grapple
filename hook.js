@@ -1,6 +1,6 @@
 import Thing from './thing.js'
 import * as THREE from './three.module.js'
-import { gameStateStack } from './main.js'
+import { gameStateStack, GltfLoader } from './main.js'
 
 export const HOOK_HOLDING = 0
 export const HOOK_SHOOTING = 1
@@ -24,14 +24,30 @@ export class Hook extends Thing {
       return new THREE.Mesh(geometry, material) 
     }
 
-    this.handModel = createCube([1,1,1],0x3366bb,false, new THREE.MeshPhongMaterial({color: 0x3366bb, depthTest:false}))
-    this.handModel.scale.set(0.15,0.15,0.25)
-    this.handModel.geometry.translate(2, -1.5, 3)
-    gameState.scene.add(this.handModel)
+    GltfLoader.load(
+      'models/GrapplingGun.glb',
+      (gltf) => {
+        this.handModel = gltf.scene
+        this.bulletExit = this.handModel.getObjectByName('BulletExit')
+        this.hookInGun = this.handModel.getObjectByName('GrapplingHook')
+        //this.handModel.scale.set(0.15,0.15,0.25)
+        //this.handModel.geometry.translate(2, -1.5, 3)
+        gameState.scene.add(this.handModel)
+      },
+      (xhr) => {},
+      (error) => {
+        console.error(error)
+      })
 
-    this.shootModel = createCube([1,1,1],0x4488ff,true)
-    this.shootModel.scale.set(0.15,0.15,0.15)
-
+    GltfLoader.load(
+      'models/GrapplingHook.glb',
+      (gltf) => {
+        this.shootModel = gltf.scene
+      },
+      (xhr) => {},
+      (error) => {
+        console.error(error)
+      })
 
     this.crosshair = createCube([1,1,1],0xffffff,false)
     this.crosshair.scale.set(0.01,0.01,0.01)
@@ -100,17 +116,15 @@ export class Hook extends Thing {
   	this.camera = gameState.camera
   	this.look = gameState.things[0].look
 
-    // hook follows view, held in player's hand
-    this.handModel.position.set(
-      this.camera.position.x + this.look.x,
-      this.camera.position.y + this.look.y,
-      this.camera.position.z + this.look.z
-    )
-    this.handModel.rotation.set(
-      this.camera.rotation.x,
-      this.camera.rotation.y,
-      this.camera.rotation.z
-    )
+    if(this.handModel) {
+      // hook follows view, held in player's hand
+      this.handModel.position.copy(this.camera.position)
+      this.handModel.rotation.set(
+        this.camera.rotation.x,
+        this.camera.rotation.y,
+        this.camera.rotation.z
+      )
+    }
 
     this.crosshair.position.set(
       this.camera.position.x + this.look.x,
@@ -132,6 +146,7 @@ export class Hook extends Thing {
 
     const gameState = gameStateStack.peek()
     gameState.scene.add(this.shootModel)
+    this.hookInGun.visible = false
 
     // get the target point to move shootmodel to
     this.target = gameState.map.raycast(gameState.player.position, look, HOOK_MAX)
@@ -141,11 +156,10 @@ export class Hook extends Thing {
     const forward = new THREE.Vector3()
     const up = new THREE.Vector3()
     this.camera.matrix.extractBasis(right, up, forward)
-    this.shootModel.position.copy(gameState.player.position)
-    this.shootModel.position.addScaledVector(right, 0.15)
-    this.shootModel.position.addScaledVector(up, -0.1)
-    this.shootModel.position.addScaledVector(forward, 0)
-    this.shootModel.rotation.copy(this.handModel.rotation)
+    this.bulletExit.getWorldPosition(this.shootModel.position)
+    if(this.handModel) {
+      this.shootModel.rotation.copy(this.handModel.rotation)
+    }
 
     this.shootDirection = this.target.clone().sub(this.shootModel.position)
     this.shootDirection.normalize()
@@ -171,6 +185,7 @@ export class Hook extends Thing {
     let gameState = gameStateStack.peek()
     gameState.player.beingPulledByHook = false
     gameState.scene.remove(this.shootModel)
+    this.hookInGun.visible = true
     this.state = HOOK_HOLDING
   }
 }

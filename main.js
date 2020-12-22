@@ -1,5 +1,6 @@
 'use strict'
 
+import { GLTFLoader } from './GLTFLoader.js'
 import * as THREE from './three.module.js'
 import { GameStateStack, GameState } from './gamestate.js'
 
@@ -14,6 +15,7 @@ let hasLockedPointer = false
 let TimeAccumulator = 0
 const TimeStep = 1/60
 export const TextureLoader = new THREE.TextureLoader()
+export const GltfLoader = new GLTFLoader()
 
 export const DebugModes = {
   editingLevel: false,
