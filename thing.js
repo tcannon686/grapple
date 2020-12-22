@@ -10,6 +10,10 @@ class Thing {
   onExitScene (gameState) {
   }
 
+  /* Called when the thing is colliding with another thing. */
+  onCollision (gameState, other) {
+  }
+
   /* Returns true if the thing should be removed this frame or not. */
   update (gameState) {
     return true
