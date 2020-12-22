@@ -46,20 +46,25 @@ class Hook extends Thing {
   	this.updateGun(gameState)
 
     if (this.state == HOOK_SHOOTING) {
-      // move in the direction being shot
-      this.shootModel.position.addScaledVector(this.shootDirection, 0.15)
+      const hookSpeed = 0.15
+      const hookCheckSteps = 6
 
-      if (gameState.map.isSolid(this.shootModel.position)) {
-        // move to the surface of the block
-        let hookMoveToSurface = gameState.map.getOverlap(this.shootModel.position.x, this.shootModel.position.y, this.shootModel.position.z)
+      for (let i=0; i<hookCheckSteps; i++) {
+        if (gameState.map.isSolid(this.shootModel.position)) {
+          // move to the surface of the block
+          let hookMoveToSurface = gameState.map.getOverlap(this.shootModel.position.x, this.shootModel.position.y, this.shootModel.position.z)
 
-        if (hookMoveToSurface) {
-          this.shootModel.position.add(hookMoveToSurface)
+          if (hookMoveToSurface) {
+            this.shootModel.position.add(hookMoveToSurface)
+          }
+
+          this.state = HOOK_LATCHED
+          this.maxDistance = gameState.player.position.distanceTo(this.shootModel.position)
+          this.reelIn()
         }
 
-        this.state = HOOK_LATCHED
-        this.maxDistance = gameState.player.position.distanceTo(this.shootModel.position)
-        this.reelIn()
+        // move in the direction being shot
+        this.shootModel.position.addScaledVector(this.shootDirection, hookSpeed/hookCheckSteps)
       }
 
       // if distance is greater than max distance, just give up
