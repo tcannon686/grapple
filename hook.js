@@ -141,6 +141,7 @@ class Hook extends Thing {
 
     let gamestate = gameStateStack.peek()
     let player = gamestate.player
+    this.playerDistance = player.position.distanceTo(this.shootModel.position)
     this.pullingVelocity = this.shootModel.position.clone()
     this.pullingVelocity.sub(gamestate.player.position)
     this.pullingVelocity.normalize()

@@ -97,7 +97,7 @@ class GameMap {
       for (let y = 0; y < height; y++) {
         this.map.arrayData[x][y] = []
         for (let z = 0; z < width; z++) {
-          this.map.arrayData[x][y][z] = 1
+          this.map.arrayData[x][y][z] = (y%4 == 1 || z%4 == 1) && x%4 > 0 ? 1 : 0
         }
       }
     }

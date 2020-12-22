@@ -91,6 +91,14 @@ class Player extends Character {
     super.update(gameState)
     this.camera.position.copy(this.position)
 
+    if (this.hook.state == HOOK_REELING) {
+      const playerDistance = this.position.distanceTo(this.hook.shootModel.position)
+      if (playerDistance+0.025 >= this.hook.playerDistance) {
+        this.hook.reset()
+      }
+      this.hook.playerDistance = playerDistance
+    }
+
     return true
   }
 
