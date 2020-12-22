@@ -2,6 +2,7 @@ const HOOK_HOLDING = 0
 const HOOK_SHOOTING = 1
 const HOOK_LATCHED = 2
 const HOOK_REELING = 3
+const HOOK_MAX = 4.5
 
 class Hook extends Thing {
   constructor (owner) {
@@ -60,7 +61,7 @@ class Hook extends Thing {
       this.targetDistance = this.shootModel.position.distanceTo(this.target)
 
       // if distance is greater than max distance, just give up
-      if (gameState.player.position.distanceTo(this.shootModel.position) > 4.5) {
+      if (gameState.player.position.distanceTo(this.shootModel.position) > HOOK_MAX) {
         this.reset()
       }
     }
@@ -129,7 +130,7 @@ class Hook extends Thing {
     gameState.scene.add(this.shootModel)
 
     // get the target point to move shootmodel to
-    this.target = gameState.map.raycast(gameState.player.position, look, 4.5)
+    this.target = gameState.map.raycast(gameState.player.position, look, HOOK_MAX)
 
     // move shootmodel to be where the handmodel is, but in world space
     const right = new THREE.Vector3()
