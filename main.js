@@ -1,18 +1,21 @@
 'use strict'
 
-const canvas = document.getElementById('theCanvas')
-const renderer = new THREE.WebGLRenderer({ canvas, antialias: true })
+import * as THREE from './three.module.js'
+import { GameStateStack, GameState } from './gamestate.js'
 
-const gameStateStack = new GameStateStack()
+export const canvas = document.getElementById('theCanvas')
+export const renderer = new THREE.WebGLRenderer({ canvas, antialias: true })
+
+export const gameStateStack = new GameStateStack()
 const print = console.log
 
 let lastTime
 let hasLockedPointer = false
 let TimeAccumulator = 0
 const TimeStep = 1/60
-const TextureLoader = new THREE.TextureLoader()
+export const TextureLoader = new THREE.TextureLoader()
 
-const DebugModes = {
+export const DebugModes = {
   editingLevel: false,
   flying: true
 }

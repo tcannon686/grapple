@@ -1,4 +1,4 @@
-class Thing {
+export default class Thing {
   constructor () {
   }
 

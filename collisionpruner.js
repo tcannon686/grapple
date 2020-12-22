@@ -1,5 +1,4 @@
-
-class CollisionPruner {
+export default class CollisionPruner {
   constructor () {
     this.coordToObject = new Map()
     this.objects = []

@@ -1,4 +1,27 @@
-class Player extends Character {
+import Character from './character.js'
+import {
+  Hook,
+  HOOK_REELING,
+  HOOK_HOLDING,
+  HOOK_LATCHED,
+  HOOK_SHOOTING
+} from './hook.js'
+import {
+  GAMEMAP_AIR,
+  GAMEMAP_WALL,
+  GAMEMAP_ENEMY,
+  GAMEMAP_MAP_THINGS,
+  KEY_TO_THING
+} from './gamestate.js'
+
+import {
+  DebugModes,
+  canvas
+} from './main.js'
+
+import * as THREE from './three.module.js'
+
+export default class Player extends Character {
   constructor () {
     super()
     this.camera = new THREE.PerspectiveCamera(90, canvas.width / canvas.height, 0.001, 5000)

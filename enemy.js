@@ -1,4 +1,7 @@
-class Enemy extends Character {
+import * as THREE from './three.module.js'
+import Character from './character.js'
+
+export default class Enemy extends Character {
   constructor (x, y, z) {
     super()
     this.position.set(x || 0, y || 0, z || 0)

@@ -1,4 +1,7 @@
-class Character extends Thing {
+import * as THREE from './three.module.js'
+import Thing from './thing.js'
+
+export default class Character extends Thing {
   constructor () {
     super()
     this.pitch = 0
