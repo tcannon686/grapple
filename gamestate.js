@@ -338,7 +338,7 @@ export class GameMap {
 
   isSolidCoord (x,y,z) {
     let get = this.getCoord(x,y,z) === GAMEMAP_WALL
-    return get || y <= 0
+    return get
   }
 
   getOverlap(x, y, z) {
@@ -402,7 +402,7 @@ export class GameState {
     this.scene.add(new THREE.Mesh(new THREE.SphereBufferGeometry(1000, 24,8), skyMaterial))
 
     /* Add the player. */
-    this.player = new Player() 
+    this.player = new Player(2.5,2.5,2.5)
     this.add(this.player)
     this.add(this.player.hook)
   }

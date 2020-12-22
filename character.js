@@ -121,11 +121,14 @@ export default class Character extends Thing {
 
     this.position.add(this.velocity)
 
+    /*
+    // can stand at y = 0
     const worldFloor = 0
     this.position.y = Math.max(this.position.y, this.height)
     if (this.position.y <= worldFloor + this.height) {
       this.onGround = true
     }
+    */
     return true
   }
 }

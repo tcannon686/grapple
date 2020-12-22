@@ -22,7 +22,7 @@ import {
 import * as THREE from './three.module.js'
 
 export default class Player extends Character {
-  constructor () {
+  constructor (x,y,z) {
     super()
     this.camera = new THREE.PerspectiveCamera(90, canvas.width / canvas.height, 0.001, 5000)
 
@@ -33,6 +33,9 @@ export default class Player extends Character {
 
     this.height = 0.8
     this.width = 0.15
+
+    this.position.set(x,y,z)
+    this.lastSafePoint = this.position.clone()
 
     // create grappling hook and add it to the gamestate
     this.hook = new Hook()
@@ -132,6 +135,19 @@ export default class Player extends Character {
         this.hook.reset()
       }
       this.hook.playerDistance = playerDistance
+    }
+
+    // save the last point the player was on the ground as their last safe point
+    /*
+    if (this.onGround) {
+      this.lastSafePoint.copy(this.position)
+    }
+    */
+
+    if (this.position.y < 0) {
+      console.log(this.lastSafePoint)
+      this.position.copy(this.lastSafePoint)
+      this.velocity.set(0,0,0)
     }
 
     return true
