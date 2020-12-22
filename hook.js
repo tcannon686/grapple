@@ -46,26 +46,18 @@ class Hook extends Thing {
   	this.updateGun(gameState)
 
     if (this.state == HOOK_SHOOTING) {
-      const hookSpeed = 0.15
-      const hookCheckSteps = 6
-
-      for (let i=0; i<hookCheckSteps; i++) {
-        if (gameState.map.isSolid(this.shootModel.position)) {
-          // move to the surface of the block
-          let hookMoveToSurface = gameState.map.getOverlap(this.shootModel.position.x, this.shootModel.position.y, this.shootModel.position.z)
-
-          if (hookMoveToSurface) {
-            this.shootModel.position.add(hookMoveToSurface)
-          }
-
+      this.shootModel.position.addScaledVector(this.shootDirection, 0.3)
+      if (this.shootModel.position.distanceTo(this.target) < 0.1
+      || this.targetDistance <= this.shootModel.position.distanceTo(this.target)) {
+        if (gameState.map.isSolid(this.target)) {
           this.state = HOOK_LATCHED
           this.maxDistance = gameState.player.position.distanceTo(this.shootModel.position)
           this.reelIn()
+        } else {
+          this.reset()
         }
-
-        // move in the direction being shot
-        this.shootModel.position.addScaledVector(this.shootDirection, hookSpeed/hookCheckSteps)
       }
+      this.targetDistance = this.shootModel.position.distanceTo(this.target)
 
       // if distance is greater than max distance, just give up
       if (gameState.player.position.distanceTo(this.shootModel.position) > 4.5) {
@@ -131,14 +123,28 @@ class Hook extends Thing {
     // can't shoot hook if not holding it!
     if (this.state != HOOK_HOLDING) { return }
 
-    this.shootDirection = look.clone()
-    this.shootDirection.normalize()
     this.state = HOOK_SHOOTING
 
-    gameStateStack.peek().scene.add(this.shootModel)
-    
-    this.shootModel.position.copy(this.handModel.position)
+    const gameState = gameStateStack.peek()
+    gameState.scene.add(this.shootModel)
+
+    // get the target point to move shootmodel to
+    this.target = gameState.map.raycast(gameState.player.position, look, 4.5)
+
+    // move shootmodel to be where the handmodel is, but in world space
+    const right = new THREE.Vector3()
+    const forward = new THREE.Vector3()
+    const up = new THREE.Vector3()
+    this.camera.matrix.extractBasis(right, up, forward)
+    this.shootModel.position.copy(gameState.player.position)
+    this.shootModel.position.addScaledVector(right, 0.15)
+    this.shootModel.position.addScaledVector(up, -0.1)
+    this.shootModel.position.addScaledVector(forward, 0)
     this.shootModel.rotation.copy(this.handModel.rotation)
+
+    this.shootDirection = this.target.clone().sub(this.shootModel.position)
+    this.shootDirection.normalize()
+    this.targetDistance = this.target.distanceTo(this.shootModel.position)
   }
 
   reelIn () {
