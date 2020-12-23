@@ -370,6 +370,10 @@ export class GameState {
 
     // set up the map
     this.map = new GameMap(this, "testmap3")
+    this.ocean = new THREE.Mesh(new THREE.PlaneBufferGeometry(1000,1000,1,1), new THREE.MeshBasicMaterial({color: 0x2c61dc, side: THREE.DoubleSide}))
+    this.ocean.position.set(0,0.5,0)
+    this.ocean.rotation.set(Math.PI/2,0,0)
+    this.scene.add(this.ocean)
 
     // add lighting
     this.scene.add(new THREE.AmbientLight(0x404040))
@@ -456,6 +460,8 @@ export class GameState {
     }
 
     this.sky.position.copy(this.player.camera.position)
+    this.ocean.position.x = this.player.camera.position.x
+    this.ocean.position.z = this.player.camera.position.z
   }
 
   render () {

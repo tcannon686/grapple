@@ -144,7 +144,7 @@ export default class Player extends Character {
     }
     */
 
-    if (this.position.y < 0) {
+    if (this.position.y < 0.5) {
       console.log(this.lastSafePoint)
       this.position.copy(this.lastSafePoint)
       this.velocity.set(0,0,0)

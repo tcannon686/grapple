@@ -7,7 +7,7 @@ export const HOOK_HOLDING = 0
 export const HOOK_SHOOTING = 1
 export const HOOK_LATCHED = 2
 export const HOOK_REELING = 3
-const HOOK_MAX = 6
+const HOOK_MAX = 6.5
 const HOOK_SPEED = 0.6
 const HOOK_PULLSPEED = 0.2
 
